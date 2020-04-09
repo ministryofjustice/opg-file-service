@@ -12,6 +12,7 @@ services:
       - localstack
     environment:
       GOPATH: /go/src
+
   localstack:
     image: localstack/localstack:0.10.5
     ports:
@@ -24,3 +25,7 @@ services:
       DEBUG: 1
     volumes: 
       - './tmp:/tmp/localstack'
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
