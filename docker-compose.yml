@@ -8,7 +8,7 @@ services:
     ports:
       - 8000:8000
     command: bash -c "go run main.go"
-    link:
+    links:
       - localstack
     environment:
       GOPATH: /go/src
