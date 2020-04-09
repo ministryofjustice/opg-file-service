@@ -26,7 +26,7 @@ func (d *Documents) GetDocuments(rw http.ResponseWriter, r *http.Request) {
 		d.l.Println(err)
 	}
 	creds := stscreds.NewCredentials(sess, "arn:aws:iam::288342028542:role/operator")
-	awsConfig := aws.Config{Credentials: creds, Region: aws.String("eu-west-1")}
+	awsConfig := aws.Config{Credentials: creds, Region: aws.String("eu-west-1"), Endpoint: aws.String("http://localstack:8080")}
 
 	s3Svc := s3.New(sess, &awsConfig)
 
