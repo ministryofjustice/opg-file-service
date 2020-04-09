@@ -1,0 +1,12 @@
+---
+version: "3.6"
+
+services:
+  zipper:
+    build: .
+    working_dir: /app
+    ports:
+      - 8000:8000
+    command: bash -c "go run main.go"
+    environment:
+      GOPATH: /go/src

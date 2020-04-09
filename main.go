@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"opg-s3-zipper-service/handlers"
 	"os"
 	"os/signal"
 	"time"
@@ -16,13 +17,13 @@ func main() {
 	l := log.New(os.Stdout, "aws-s3-zipper ", log.LstdFlags)
 
 	// create the handlers
-	//dh := handlers.NewDocuments(l)
+	dh := handlers.NewDocuments(l)
 
 	//Create new serveMux and register the handlers
 	sm := mux.NewRouter()
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	//getRouter.HandleFunc("/zip-documents", dh.GetDocuments)
+	getRouter.HandleFunc("/zip-documents", dh.GetDocuments)
 	getRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "I'm working")
 	})
