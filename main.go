@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
+	_ "github.com/nicholasjackson/env"
 	"log"
 	"net/http"
 	"opg-s3-zipper-service/handlers"
+	"opg-s3-zipper-service/utils"
 	"os"
 	"os/signal"
 	"time"
@@ -16,6 +18,9 @@ func main() {
 	// Create a Logger
 	l := log.New(os.Stdout, "aws-s3-zipper ", log.LstdFlags)
 
+	//Init Redis connection
+	utils.InitRedisPool(l)
+
 	// create the handlers
 	dh := handlers.NewDocuments(l)
 
@@ -23,9 +28,10 @@ func main() {
 	sm := mux.NewRouter()
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/zip-documents", dh.GetDocuments)
+	getRouter.HandleFunc("/zip-documents/{reference}", dh.GetDocuments)
 	getRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "I'm working")
+		l.Println("I'm Logging!")
 	})
 
 	s := &http.Server{
@@ -56,3 +62,4 @@ func main() {
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	s.Shutdown(tc)
 }
+

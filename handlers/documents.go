@@ -5,9 +5,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/gorilla/mux"
+	"github.com/nicholasjackson/env"
 	"log"
 	"net/http"
+	"opg-s3-zipper-service/utils"
 )
+
+var iamRole = env.String("IAM_ROLE", true, "", "IAM Role for use with AWS-SDK")
 
 // Documents is a http.Handler
 type Documents struct {
@@ -19,16 +24,40 @@ func NewDocuments(l *log.Logger) *Documents {
 }
 
 func (d *Documents) GetDocuments(rw http.ResponseWriter, r *http.Request) {
-	d.l.Println("Handle GET zip-documents")
 
-	sess, err := session.NewSession()
-	if err != nil {
-		d.l.Println(err)
-	}
-	creds := stscreds.NewCredentials(sess, "arn:aws:iam::288342028542:role/operator")
-	awsConfig := aws.Config{Credentials: creds, Region: aws.String("eu-west-1"), Endpoint: aws.String("http://localstack:8080")}
+	//Get the reference from the request
+	vars := mux.Vars(r)
+	reference := vars["reference"]
+	d.l.Println("Zip files for reference:", reference)
 
-	s3Svc := s3.New(sess, &awsConfig)
+	// Get the files from redis, passing in the redis reference
+	utils.GetFilesFromRedis(reference)
 
 }
 
+
+func getDocumentsFromS3(l *log.Logger) {
+	// TODO: Actually pull documents from S3
+	sess, err := session.NewSession()
+	if err != nil {
+		l.Println(err)
+	}
+	c := stscreds.NewCredentials(sess, *iamRole)
+	awsConfig := aws.Config{Credentials: c, Region: aws.String("eu-west-1"), Endpoint: aws.String("http://localstack:8080")}
+	svc := s3.New(sess, &awsConfig)
+
+	// List buckets to check if auth is working TODO: Remove this once its working
+	result, err := svc.ListBuckets(nil)
+	if err != nil {
+		l.Fatalln("Failed to list buckets")
+	}
+
+	for _, b := range result.Buckets {
+		l.Println("* %s created on %s\n",
+			aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
+	}
+}
+
+func zipDocuments() {
+	// TODO: Implement the zip functionality from s3zipper
+}
