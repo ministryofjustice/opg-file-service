@@ -14,7 +14,6 @@ services:
       GOPATH: /go/src
       IAM_ROLE: arn:aws:iam::288342028542:role/operator
       REDIS_URL: "127.0.0.1:6379"
-
   localstack:
     image: localstack/localstack:0.10.5
     ports:
