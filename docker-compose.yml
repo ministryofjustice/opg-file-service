@@ -1,0 +1,32 @@
+---
+version: "3.6"
+
+services:
+  zipper:
+    build: .
+    working_dir: /app
+    ports:
+      - 8000:8000
+    command: bash -c "go run main.go"
+    links:
+      - localstack
+    environment:
+      GOPATH: /go/src
+      IAM_ROLE: arn:aws:iam::288342028542:role/operator
+      REDIS_URL: "127.0.0.1:6379"
+  localstack:
+    image: localstack/localstack:0.10.5
+    ports:
+      - "8001:8080"
+    environment:
+      DEFAULT_REGION: eu-west-1
+      HOSTNAME_EXTERNAL: localstack
+      SERVICES: s3
+      DATA_DIR: /tmp/localstack/data
+      DEBUG: 1
+    volumes: 
+      - './tmp:/tmp/localstack'
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
