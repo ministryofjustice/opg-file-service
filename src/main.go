@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"opg-s3-zipper-service/handlers"
-	"opg-s3-zipper-service/utils"
 	"os"
 	"os/signal"
 	"time"
@@ -17,9 +16,6 @@ import (
 func main() {
 	// Create a Logger
 	l := log.New(os.Stdout, "aws-s3-zipper ", log.LstdFlags)
-
-	//Init Redis connection
-	utils.InitRedisPool(l)
 
 	// create the handlers
 	dh := handlers.NewDocuments(l)
@@ -62,4 +58,3 @@ func main() {
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	s.Shutdown(tc)
 }
-

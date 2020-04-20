@@ -9,7 +9,6 @@ import (
 	"github.com/nicholasjackson/env"
 	"log"
 	"net/http"
-	"opg-s3-zipper-service/utils"
 )
 
 var iamRole = env.String("IAM_ROLE", true, "", "IAM Role for use with AWS-SDK")
@@ -30,11 +29,8 @@ func (d *Documents) GetDocuments(rw http.ResponseWriter, r *http.Request) {
 	reference := vars["reference"]
 	d.l.Println("Zip files for reference:", reference)
 
-	// Get the files from redis, passing in the redis reference
-	utils.GetFilesFromRedis(reference)
-
+	// TODO: Get the files from DynamoDB
 }
-
 
 func getDocumentsFromS3(l *log.Logger) {
 	// TODO: Actually pull documents from S3
