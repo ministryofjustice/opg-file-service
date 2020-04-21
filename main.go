@@ -16,18 +16,18 @@ import (
 
 func main() {
 	// Create a Logger
-	l := log.New(os.Stdout, "zipper-service ", log.LstdFlags)
+	l := log.New(os.Stdout, "opg-s3-zipper-service ", log.LstdFlags)
 
 	// create the handlers
-	dh := handlers.NewDocuments(l)
+	zip := handlers.NewZip(l)
 
-	//Create new serveMux and register the handlers
+	// Create new serveMux and register the handlers
 	sm := mux.NewRouter()
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.Use(middleware.JwtVerify)
 
-	getRouter.HandleFunc("/zip-documents/{reference}", dh.GetDocuments)
+	getRouter.Handle("/zip/{reference}", zip)
 	getRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "I'm working")
 		l.Println("I'm Logging!")
@@ -52,8 +52,7 @@ func main() {
 
 	// Gracefully shutdown when signal received
 	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, os.Kill)
+	signal.Notify(c, os.Interrupt, os.Kill)
 
 	sig := <-c
 	l.Println("Received terminate, graceful shutdown", sig)
