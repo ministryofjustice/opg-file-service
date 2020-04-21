@@ -2,7 +2,7 @@ package session
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	_ "github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"os"
 )
@@ -12,7 +12,7 @@ type Session struct {
 }
 
 func NewSession() (*Session, error) {
-	iamRole := os.Getenv("AWS_IAM_ROLE")
+	//iamRole := os.Getenv("AWS_IAM_ROLE")
 	awsRegion := os.Getenv("AWS_REGION")
 
 	if awsRegion == "" {
@@ -24,8 +24,8 @@ func NewSession() (*Session, error) {
 		return nil, err
 	}
 
-	c := stscreds.NewCredentials(sess, iamRole)
-	*sess.Config.Credentials = *c
+	//c := stscreds.NewCredentials(sess, iamRole)
+	//*sess.Config.Credentials = *c
 
 	return &Session{sess}, nil
 }

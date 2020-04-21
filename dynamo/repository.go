@@ -33,14 +33,20 @@ func NewRepository(sess *session.Session, l *log.Logger) *Repository {
 // TODO: remove ListTables method when done debugging
 func (repo Repository) ListTables() {
 	// create the input configuration instance
-	input := &dynamodb.ListTablesInput{}
+	table := "zip-requests"
+	input := &dynamodb.ListTablesInput{
+		ExclusiveStartTableName: &table,
+	}
 
 	for {
 		// Get the list of tables
 		repo.logger.Println("endpoint is " + repo.db.Endpoint)
-		repo.logger.Println("about to get list of tables")
+		repo.logger.Println("about to get list of tables...")
 
 		result, err := repo.db.ListTables(input)
+
+		repo.logger.Println(result.TableNames)
+
 		if err != nil {
 			if aerr, ok := err.(awserr.Error); ok {
 				switch aerr.Code() {
