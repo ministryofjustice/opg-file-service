@@ -1,16 +1,16 @@
-FROM golang:1.14
+FROM golang:1.14 as build-env
 
-RUN mkdir -p /app/src /app/bin
+WORKDIR /app
 
-WORKDIR /app/src
-
-COPY src/go.mod .
-COPY src/go.sum .
+COPY go.mod .
+COPY go.sum .
 
 RUN go mod download
 
-COPY src /app/src
+COPY . .
 
-RUN go build -o /app/bin/zipper
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/zipper
 
-ENTRYPOINT ["/app/bin/zipper"]
+FROM scratch
+COPY --from=build-env /go/bin/zipper /go/bin/zipper
+ENTRYPOINT ["/go/bin/zipper"]
