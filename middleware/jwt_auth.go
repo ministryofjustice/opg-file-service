@@ -1,17 +1,19 @@
 package middleware
 
 import (
-	"encoding/json"
+	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"log"
 	"net/http"
+	"opg-s3-zipper-service/utils"
+	"os"
 	"strings"
 )
 
-type ErrorMsg struct {
-	Message string `json:"message"`
-}
+type hashedEmail struct {}
 
 func JwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -22,7 +24,7 @@ func JwtVerify(next http.Handler) http.Handler {
 		//If Authorization is empty, return a 403
 		if header == "" {
 			rw.WriteHeader(http.StatusForbidden)
-			json.NewEncoder(rw).Encode(ErrorMsg{ Message: "Missing Authentication Token" })
+			utils.WriteJSONError(rw, "missing_token", "Missing Authentication Token", http.StatusForbidden)
 			return
 		}
 
@@ -38,13 +40,27 @@ func JwtVerify(next http.Handler) http.Handler {
 		// Return the error
 		if err != nil {
 			rw.WriteHeader(http.StatusForbidden)
-			json.NewEncoder(rw).Encode(ErrorMsg{Message: err.Error()})
+			utils.WriteJSONError(rw, "error_with_token", err.Error(), http.StatusForbidden)
 			return
 		}
 
 		if token.Valid {
-			log.Println("JWT Token is valid")
+			claims := token.Claims.(jwt.MapClaims)
+			e := claims["session-data"].(string)
+			he := hashEmail(e)
+			log.Println("JWT Token is valid for user", he)
+
+			ctx := context.WithValue(r.Context(), hashedEmail{}, he)
+			r.WithContext(ctx)
 			next.ServeHTTP(rw, r)
 		}
 	})
+}
+
+// Create a hash of the users email
+func hashEmail(e string) string {
+	salt := os.Getenv("USER_HASH_SALT")
+	h := md5.New()
+	h.Write([]byte(salt + e))
+	return hex.EncodeToString(h.Sum(nil))
 }
