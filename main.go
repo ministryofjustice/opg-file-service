@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
-	_ "github.com/nicholasjackson/env"
 	"log"
 	"net/http"
 	"opg-file-service/handlers"
@@ -19,7 +18,7 @@ func main() {
 	l := log.New(os.Stdout, "opg-s3-zipper-service ", log.LstdFlags)
 
 	// create the handlers
-	zip := handlers.NewZip(l)
+	zh := handlers.NewZipHandler(l)
 
 	// Create new serveMux and register the handlers
 	sm := mux.NewRouter()
@@ -27,7 +26,7 @@ func main() {
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.Use(middleware.JwtVerify)
 
-	getRouter.Handle("/zip/{reference}", zip)
+	getRouter.Handle("/zip/{reference}", zh)
 	getRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "I'm working")
 		l.Println("I'm Logging!")
@@ -39,7 +38,7 @@ func main() {
 		ErrorLog:     l,                 // Set the logger for the server
 		IdleTimeout:  120 * time.Second, // max time fro connections using TCP Keep-Alive
 		ReadTimeout:  1 * time.Second,   // max time to read request from the client
-		WriteTimeout: 1 * time.Second,   // max time to write response to the client
+		WriteTimeout: 30 * time.Minute,  // max time to write response to the client TODO: discuss
 	}
 
 	// start the server
