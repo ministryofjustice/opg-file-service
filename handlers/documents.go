@@ -49,8 +49,7 @@ func getDocumentsFromS3(l *log.Logger) {
 	}
 
 	for _, b := range result.Buckets {
-		l.Println("* %s created on %s\n",
-			aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
+		l.Println("Bucket name:", aws.StringValue(b.Name))
 	}
 }
 
