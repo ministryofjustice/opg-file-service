@@ -15,13 +15,11 @@ type Repository struct {
 	logger *log.Logger
 }
 
-func NewRepository(sess *session.Session, l *log.Logger) *Repository {
+func NewRepository(sess session.Session, l *log.Logger) *Repository {
 	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
+	sess.AwsSession.Config.Endpoint = &endpoint
 
-	config := *sess.AwsSession.Config
-	config.Endpoint = &endpoint
-
-	dynamo := dynamodb.New(sess.AwsSession, &config)
+	dynamo := dynamodb.New(sess.AwsSession)
 
 	return &Repository{
 		db:     dynamo,
@@ -51,7 +49,7 @@ func (repo Repository) GetEntry(ref string) (*storage.Entry, error) {
 
 	err = dynamodbattribute.UnmarshalMap(result.Item, &entry)
 	if err != nil {
-		repo.logger.Println("Failed to unmarshal Record, %v", err)
+		repo.logger.Println("Failed to unmarshal Record, ", err)
 		return nil, notFound
 	}
 
