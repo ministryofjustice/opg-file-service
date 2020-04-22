@@ -5,9 +5,9 @@ workflows:
     jobs:
       - test_zipper_service:
           name: test_zipper_service
-      - build_zipper_service:
-          name: build_zipper_service
-          requires: [test_zipper_service]
+#      - build_zipper_service:
+#          name: build_zipper_service
+#          requires: [test_zipper_service]
 
 orbs:
   zipper_service:
@@ -34,14 +34,20 @@ orbs:
 jobs:
   test_zipper_service:
     docker:
-      - image:
+      - image: circleci/golang
+    environment:
+      TEST_RESULTS: /tmp/test-results
+      GOTESTSUM_FORMAT: short-verbose
     steps:
       - checkout
       - run:
           name: go_mod
           command: go mod download
+      - run: mkdir -p $TEST_RESULTS
       - run:
           name: unit_tests
-          command:
-  build_zipper_service:
+          command: gotestsum --junitfile unit-tests.xml
+      - store_test_results:
+          path: /tmp/test-results
+#  build_zipper_service:
     
