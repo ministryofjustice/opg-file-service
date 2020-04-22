@@ -17,6 +17,7 @@ type hashedEmail struct {}
 
 func JwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		jwtSecret := utils.GetEnvVar("JWT_SECRET", "MyTestSecret")
 
 		//Get the token from the header
 		header := r.Header.Get("Authorization")
@@ -34,7 +35,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return []byte("MyTestSecret"), nil
+			return []byte(jwtSecret), nil
 		})
 
 		// Return the error
