@@ -3,10 +3,9 @@ package internal
 import "os"
 
 func GetEnvVar(e string, d string) string {
-	envVar := os.Getenv(e)
-	if envVar == "" {
-		envVar := d
+	if envVar, ok := os.LookupEnv(e); !ok {
+		return d
+	} else {
 		return envVar
 	}
-	return envVar
 }
