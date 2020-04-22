@@ -12,7 +12,7 @@ type File struct {
 }
 
 func (f *File) getSafeFileName() string {
-	regex := regexp.MustCompile(`[#<>:"/\|?*\\]`)
+	regex := regexp.MustCompile(`[#<>:"/|?*\\]`)
 	safe := regex.ReplaceAllString(f.FileName, "")
 	if safe == "" {
 		return "file" // fallback
