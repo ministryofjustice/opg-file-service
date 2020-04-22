@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"opg-s3-zipper-service/internal"
-	"os"
 	"strings"
 )
 
@@ -60,7 +59,7 @@ func JwtVerify(next http.Handler) http.Handler {
 
 // Create a hash of the users email
 func hashEmail(e string) string {
-	salt := os.Getenv("USER_HASH_SALT")
+	salt := internal.GetEnvVar("USER_HASH_SALT", "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0")
 	h := md5.New()
 	h.Write([]byte(salt + e))
 	return hex.EncodeToString(h.Sum(nil))
