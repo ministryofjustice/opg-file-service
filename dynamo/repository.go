@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"log"
+	"opg-s3-zipper-service/internal"
 	"opg-s3-zipper-service/session"
 	"opg-s3-zipper-service/storage"
 	"os"
@@ -13,6 +14,7 @@ import (
 type Repository struct {
 	db     *dynamodb.DynamoDB
 	logger *log.Logger
+	table  string
 }
 
 func NewRepository(sess session.Session, l *log.Logger) *Repository {
@@ -24,16 +26,15 @@ func NewRepository(sess session.Session, l *log.Logger) *Repository {
 	return &Repository{
 		db:     dynamo,
 		logger: l,
+		table:  internal.GetEnvVar("AWS_DYNAMODB_TABLE_NAME", "zip-requests"),
 	}
 }
 
-func (repo Repository) GetEntry(ref string) (*storage.Entry, error) {
-	tableName := os.Getenv("AWS_DYNAMODB_TABLE_NAME")
-
+func (repo Repository) Get(ref string) (*storage.Entry, error) {
 	notFound := storage.NotFoundError{Ref: ref}
 
 	result, err := repo.db.GetItem(&dynamodb.GetItemInput{
-		TableName: &tableName,
+		TableName: &repo.table,
 		Key: map[string]*dynamodb.AttributeValue{
 			"ref": {
 				S: aws.String(ref),
@@ -59,4 +60,19 @@ func (repo Repository) GetEntry(ref string) (*storage.Entry, error) {
 	}
 
 	return &entry, nil
+}
+
+func (repo Repository) Delete(entry *storage.Entry) error {
+	input := &dynamodb.DeleteItemInput{
+		TableName: &repo.table,
+		Key: map[string]*dynamodb.AttributeValue{
+			"ref": {
+				S: aws.String(entry.Ref),
+			},
+		},
+	}
+
+	_, err := repo.db.DeleteItem(input)
+
+	return err
 }

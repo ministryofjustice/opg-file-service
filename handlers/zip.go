@@ -39,7 +39,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	repo := dynamo.NewRepository(*sess, zh.logger)
 
-	entry, err := repo.GetEntry(reference)
+	entry, err := repo.Get(reference)
 	if err != nil {
 		zh.logger.Println(err.Error())
 		internal.WriteJSONError(rw, "ref", "Reference token not found.", http.StatusNotFound)
@@ -77,7 +77,11 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		zh.logger.Println(err.Error())
 	}
 
-	// TODO: delete entry from Dynamo
+	err = repo.Delete(entry)
+	if err != nil {
+		zh.logger.Println(err.Error())
+		zh.logger.Println("Unable to delete reference ", entry.Ref)
+	}
 
 	zh.logger.Println("Request took: ", time.Since(start))
 }

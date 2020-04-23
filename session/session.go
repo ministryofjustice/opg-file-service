@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"opg-s3-zipper-service/internal"
 	"os"
 )
 
@@ -12,7 +13,7 @@ type Session struct {
 }
 
 func NewSession() (*Session, error) {
-	awsRegion := os.Getenv("AWS_REGION")
+	awsRegion := internal.GetEnvVar("AWS_REGION", "eu-west-1")
 
 	if awsRegion == "" {
 		awsRegion = "eu-west-1" // default region
@@ -23,8 +24,7 @@ func NewSession() (*Session, error) {
 		return nil, err
 	}
 
-	iamRole, isIamRoleSet := os.LookupEnv("AWS_IAM_ROLE")
-	if isIamRoleSet {
+	if iamRole, ok := os.LookupEnv("AWS_IAM_ROLE"); ok {
 		c := stscreds.NewCredentials(sess, iamRole)
 		*sess.Config.Credentials = *c
 	}
