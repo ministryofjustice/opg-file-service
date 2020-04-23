@@ -102,3 +102,11 @@ func TestJwtVerifyExpiredToken(t *testing.T) {
 
 	assert.Equal(t, 401, rw.Result().StatusCode, "Status Code should be 401")
 }
+
+func TestHashEmail(t *testing.T) {
+	assert.Equal(
+		t,
+		"d1a046e6300ea9a75cc4f9eda85e8442c3e9913b8eeb4ed0895896571e479a99",
+		hashEmail("Test.McTestFace@mail.com"),
+	)
+}
