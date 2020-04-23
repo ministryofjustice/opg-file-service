@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
@@ -60,7 +60,7 @@ func JwtVerify(next http.Handler) http.Handler {
 // Create a hash of the users email
 func hashEmail(e string) string {
 	salt := internal.GetEnvVar("USER_HASH_SALT", "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0")
-	h := md5.New()
+	h := sha256.New()
 	h.Write([]byte(salt + e))
 	return hex.EncodeToString(h.Sum(nil))
 }
