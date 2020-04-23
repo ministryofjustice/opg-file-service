@@ -23,7 +23,7 @@ func TestJwtVerify(t *testing.T) {
 	handler := JwtVerify(testHandler)
 	handler.ServeHTTP(rw, req)
 
-	assert.NotEqual(t, 403,  rw.Result().StatusCode, "Status Code should be 200")
+	assert.NotEqual(t, 401, rw.Result().StatusCode, "Status Code should be 200")
 }
 
 func TestJwtVerifyInvalidToken(t *testing.T) {
@@ -43,7 +43,7 @@ func TestJwtVerifyInvalidToken(t *testing.T) {
 	handler.ServeHTTP(rw, req)
 	fmt.Println(rw.Result())
 
-	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 403")
+	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 401")
 }
 
 func TestJwtVerifyNoJwtToken(t *testing.T) {
@@ -62,7 +62,7 @@ func TestJwtVerifyNoJwtToken(t *testing.T) {
 	handler.ServeHTTP(rw, req)
 	fmt.Println(rw.Result())
 
-	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 403")
+	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 401")
 }
 
 func TestJwtVerifyWrongSigningMethod(t *testing.T) {
@@ -82,7 +82,7 @@ func TestJwtVerifyWrongSigningMethod(t *testing.T) {
 	handler.ServeHTTP(rw, req)
 	fmt.Println(rw.Result())
 
-	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 403")
+	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 401")
 }
 
 func TestJwtVerifyExpiredToken(t *testing.T) {
@@ -100,5 +100,5 @@ func TestJwtVerifyExpiredToken(t *testing.T) {
 	handler := JwtVerify(testHandler)
 	handler.ServeHTTP(rw, req)
 
-	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 403")
+	assert.NotEqual(t, 200, rw.Result().StatusCode, "Status Code should be 401")
 }

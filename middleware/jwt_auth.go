@@ -21,9 +21,9 @@ func JwtVerify(next http.Handler) http.Handler {
 		//Get the token from the header
 		header := r.Header.Get("Authorization")
 
-		//If Authorization is empty, return a 403
+		//If Authorization is empty, return a 401
 		if header == "" {
-			internal.WriteJSONError(rw, "missing_token", "Missing Authentication Token", http.StatusForbidden)
+			internal.WriteJSONError(rw, "missing_token", "Missing Authentication Token", http.StatusUnauthorized)
 			return
 		}
 
@@ -38,7 +38,7 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		// Return the error
 		if err != nil {
-			internal.WriteJSONError(rw, "error_with_token", err.Error(), http.StatusForbidden)
+			internal.WriteJSONError(rw, "error_with_token", err.Error(), http.StatusUnauthorized)
 			return
 		}
 
