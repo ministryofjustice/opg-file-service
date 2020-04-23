@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,9 +23,7 @@ func TestJwtVerify(t *testing.T) {
 	handler := JwtVerify(testHandler)
 	handler.ServeHTTP(rw, req)
 
-	if rw.Result().StatusCode == 403 {
-		t.Fatalf("Status code should be 200 as a valid JWT token was passed")
-	}
+	assert.Equal(t, 200,  rw.Result().StatusCode, "Status Code should be 200")
 }
 
 func TestJwtVerifyInvalidToken(t *testing.T) {
@@ -44,9 +43,7 @@ func TestJwtVerifyInvalidToken(t *testing.T) {
 	handler.ServeHTTP(rw, req)
 	fmt.Println(rw.Result())
 
-	if rw.Result().StatusCode == 200 {
-		t.Fatalf("Status code should be 403 as a invalid JWT token was passed")
-	}
+	assert.Equal(t, 403, rw.Result().StatusCode, "Status Code should be 403")
 }
 
 func TestJwtVerifyNoJwtToken(t *testing.T) {
@@ -64,9 +61,8 @@ func TestJwtVerifyNoJwtToken(t *testing.T) {
 	handler := JwtVerify(testHandler)
 	handler.ServeHTTP(rw, req)
 	fmt.Println(rw.Result())
-	if rw.Result().StatusCode == 200 {
-		t.Fatalf("Status code should be 403 as no JWT token was passed")
-	}
+
+	assert.Equal(t, 403, rw.Result().StatusCode, "Status Code should be 403")
 }
 
 func TestJwtVerifyWrongSigningMethod(t *testing.T) {
@@ -85,9 +81,8 @@ func TestJwtVerifyWrongSigningMethod(t *testing.T) {
 	handler := JwtVerify(testHandler)
 	handler.ServeHTTP(rw, req)
 	fmt.Println(rw.Result())
-	if rw.Result().StatusCode == 200 {
-		t.Fatalf("Status code should be 403 as a token with the wrong siging method was passed")
-	}
+
+	assert.Equal(t, 403, rw.Result().StatusCode, "Status Code should be 403")
 }
 
 func TestJwtVerifyExpiredToken(t *testing.T) {
@@ -105,8 +100,5 @@ func TestJwtVerifyExpiredToken(t *testing.T) {
 	handler := JwtVerify(testHandler)
 	handler.ServeHTTP(rw, req)
 
-	if rw.Result().StatusCode == 200 {
-		t.Fatalf("Status code should be 403 as a expired JWT token was passed")
-	}
-
+	assert.Equal(t, 403, rw.Result().StatusCode, "Status Code should be 403")
 }
