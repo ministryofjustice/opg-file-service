@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"opg-s3-zipper-service/handlers"
+	"opg-s3-zipper-service/middleware"
 	"os"
 	"os/signal"
 	"time"
@@ -15,7 +16,7 @@ import (
 
 func main() {
 	// Create a Logger
-	l := log.New(os.Stdout, "aws-s3-zipper ", log.LstdFlags)
+	l := log.New(os.Stdout, "zipper-service ", log.LstdFlags)
 
 	// create the handlers
 	dh := handlers.NewDocuments(l)
@@ -24,6 +25,8 @@ func main() {
 	sm := mux.NewRouter()
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.Use(middleware.JwtVerify)
+
 	getRouter.HandleFunc("/zip-documents/{reference}", dh.GetDocuments)
 	getRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "I'm working")
