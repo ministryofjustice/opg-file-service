@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-type hashedEmail struct {}
+type hashedEmail struct{}
 
 func JwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,6 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		//If Authorization is empty, return a 403
 		if header == "" {
-			rw.WriteHeader(http.StatusForbidden)
 			internal.WriteJSONError(rw, "missing_token", "Missing Authentication Token", http.StatusForbidden)
 			return
 		}
@@ -39,7 +38,6 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		// Return the error
 		if err != nil {
-			rw.WriteHeader(http.StatusForbidden)
 			internal.WriteJSONError(rw, "error_with_token", err.Error(), http.StatusForbidden)
 			return
 		}
