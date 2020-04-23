@@ -70,5 +70,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		zh.logger.Println(err.Error())
 	}
 
+	// TODO: delete entry from Dynamo
+
 	zh.logger.Println("Request took: ", time.Since(start))
 }
