@@ -46,7 +46,9 @@ func TestJwtVerify(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		req.Header.Set("Authorization", "Bearer "+test.token)
+		if test.token != "" {
+			req.Header.Set("Authorization", "Bearer "+test.token)
+		}
 		testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
 		rw := httptest.NewRecorder()
