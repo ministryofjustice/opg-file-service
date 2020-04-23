@@ -46,7 +46,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			claims := token.Claims.(jwt.MapClaims)
 			e := claims["session-data"].(string)
 			he := hashEmail(e)
-			log.Println("JWT Token is valid for user", he)
+			log.Println("JWT Token is valid for user ", he)
 
 			ctx := context.WithValue(r.Context(), HashedEmail{}, he)
 			r.WithContext(ctx)

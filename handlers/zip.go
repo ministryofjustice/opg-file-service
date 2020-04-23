@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"opg-s3-zipper-service/dynamo"
+	"opg-s3-zipper-service/internal"
+	"opg-s3-zipper-service/middleware"
 	"opg-s3-zipper-service/session"
 	"opg-s3-zipper-service/zipper"
 	"time"
@@ -31,7 +33,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	sess, err := session.NewSession()
 	if err != nil {
 		zh.logger.Println(err.Error())
-		http.Error(rw, "", 500) // TODO: convert to JSON
+		internal.WriteJSONError(rw, "session", "Unable to start a new session", http.StatusInternalServerError)
 		return
 	}
 
@@ -40,17 +42,22 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	entry, err := repo.GetEntry(reference)
 	if err != nil {
 		zh.logger.Println(err.Error())
-		http.Error(rw, err.Error(), 404) // TODO: convert to JSON
+		internal.WriteJSONError(rw, "ref", "Reference token not found.", http.StatusNotFound)
 		return
 	}
 
 	if entry.IsExpired() {
-		zh.logger.Println("Zip reference has expired")
-		http.Error(rw, "Zip reference has expired", 404) // TODO: convert to JSON
+		zh.logger.Println("Reference token has expired.")
+		internal.WriteJSONError(rw, "ref", "Reference token has expired.", http.StatusNotFound)
 		return
 	}
 
-	// TODO: return a 403 if the user hash doesn't match
+	userHash := r.Context().Value(middleware.HashedEmail{})
+	if entry.Hash != userHash {
+		zh.logger.Println("Access denied for user ", userHash)
+		internal.WriteJSONError(rw, "auth", "Access denied.", http.StatusForbidden)
+		return
+	}
 
 	zipService := zipper.NewZipper(*sess, rw)
 
@@ -60,7 +67,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		err := zipService.AddFile(&file)
 		if err != nil {
 			zh.logger.Println(err.Error())
-			http.Error(rw, "Could not add file to zip", 500) // TODO: convert to JSON
+			internal.WriteJSONError(rw, "zip", "Unable to zip requested file.", http.StatusInternalServerError)
 			return
 		}
 	}
