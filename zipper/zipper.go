@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"net/http"
 	"net/url"
-	"opg-s3-zipper-service/session"
-	"opg-s3-zipper-service/storage"
+	"opg-file-service/session"
+	"opg-file-service/storage"
 	"os"
 	"strings"
 )

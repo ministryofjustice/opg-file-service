@@ -5,9 +5,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"log"
-	"opg-s3-zipper-service/internal"
-	"opg-s3-zipper-service/session"
-	"opg-s3-zipper-service/storage"
+	"opg-file-service/internal"
+	"opg-file-service/session"
+	"opg-file-service/storage"
 	"os"
 )
 

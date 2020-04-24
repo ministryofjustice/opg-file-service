@@ -4,11 +4,11 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"opg-s3-zipper-service/dynamo"
-	"opg-s3-zipper-service/internal"
-	"opg-s3-zipper-service/middleware"
-	"opg-s3-zipper-service/session"
-	"opg-s3-zipper-service/zipper"
+	"opg-file-service/dynamo"
+	"opg-file-service/internal"
+	"opg-file-service/middleware"
+	"opg-file-service/session"
+	"opg-file-service/zipper"
 	"time"
 )
 
