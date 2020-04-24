@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -11,24 +12,26 @@ type File struct {
 	Folder   string
 }
 
-func (f *File) getSafeFileName() string {
-	regex := regexp.MustCompile(`[#<>:"/|?*\\]`)
-	safe := regex.ReplaceAllString(f.FileName, "")
-	if safe == "" {
-		return "file" // fallback
-	}
-	return safe
-}
+func (f *File) GetPathInZip() string {
+	// regex for getting a safe filename and folder
+	regex := regexp.MustCompile(`[#\[\]<>:"/|?*\\]`)
 
-func (f *File) GetZipPath() string {
 	path := ""
 
 	if f.Folder != "" {
-		path += f.Folder
-		if !strings.HasSuffix(path, "/") {
-			path += "/"
+		folder := regex.ReplaceAllString(f.Folder, "")
+		if folder != "" {
+			path += folder
+			if !strings.HasSuffix(path, "/") {
+				path += "/"
+			}
 		}
 	}
 
-	return path + f.getSafeFileName()
+	file := regex.ReplaceAllString(f.FileName, "")
+	if file == "" {
+		file = fmt.Sprint("undefined") // default filename
+	}
+
+	return path + file
 }

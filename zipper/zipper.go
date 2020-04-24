@@ -52,7 +52,7 @@ func (z *Zipper) AddFile(f *storage.File) error {
 	// We have to set a special flag so zip files recognize utf file names
 	// See http://stackoverflow.com/questions/30026083/creating-a-zip-archive-with-unicode-filenames-using-gos-archive-zip
 	fh := &zip.FileHeader{
-		Name:   f.GetZipPath(),
+		Name:   f.GetPathInZip(),
 		Method: zip.Deflate,
 		Flags:  0x800,
 	}
