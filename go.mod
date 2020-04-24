@@ -1,4 +1,4 @@
-module opg-s3-zipper-service
+module opg-file-service
 
 go 1.14
 
