@@ -16,8 +16,8 @@ import (
 
 type Zipper struct {
 	rw http.ResponseWriter
-	zw *zip.Writer
-	s3 *s3manager.Downloader
+	zw ZipWriter
+	s3 Downloader
 }
 
 func NewZipper(sess session.Session, rw http.ResponseWriter) *Zipper {
@@ -46,24 +46,23 @@ func (z *Zipper) Close() error {
 
 func (z *Zipper) AddFile(f *storage.File) error {
 	if f.S3path == "" {
-		return errors.New("missing S3 path for file")
+		return errors.New("missing S3 path")
 	}
-
-	// We have to set a special flag so zip files recognize utf file names
-	// See http://stackoverflow.com/questions/30026083/creating-a-zip-archive-with-unicode-filenames-using-gos-archive-zip
-	fh := &zip.FileHeader{
-		Name:   f.GetPathInZip(),
-		Method: zip.Deflate,
-		Flags:  0x800,
-	}
-
-	w, _ := z.zw.CreateHeader(fh)
-	fw := FakeWriterAt{w} // wrap our io.Writer in a fake io.WriterAt, as S3 requires a io.WriterAt
 
 	u, err := url.Parse(f.S3path)
 	if err != nil {
+		return errors.New("unable to parse S3 path: " + f.S3path)
+	}
+
+	if u.Scheme != "s3" || u.Host == "" || u.Path == "" {
+		return errors.New("invalid S3 path: " + f.S3path)
+	}
+
+	w, err := z.zw.CreateHeader(f.GetZipFileHeader())
+	if err != nil {
 		return err
 	}
+	fw := FakeWriterAt{w} // wrap our io.Writer in a fake io.WriterAt, as S3 requires a io.WriterAt
 
 	input := s3.GetObjectInput{
 		Bucket: aws.String(u.Host),

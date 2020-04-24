@@ -5,6 +5,16 @@ import (
 	"testing"
 )
 
+func TestFile_GetZipFileHeader(t *testing.T) {
+	f := File{
+		S3path:   "s3://bucket/file",
+		FileName: "file",
+		Folder:   "folder",
+	}
+	fh := f.GetZipFileHeader()
+	assert.Equal(t, f.GetPathInZip(), fh.Name)
+}
+
 func TestFile_GetPathInZip(t *testing.T) {
 	tests := []struct {
 		fileName string
