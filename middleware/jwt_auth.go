@@ -8,7 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"log"
 	"net/http"
-	"opg-s3-zipper-service/internal"
+	"opg-file-service/internal"
 	"strings"
 )
 
