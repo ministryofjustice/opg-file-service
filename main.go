@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -17,20 +16,20 @@ func main() {
 	// Create a Logger
 	l := log.New(os.Stdout, "opg-file-service ", log.LstdFlags)
 
-	// create the handlers
-	zh := handlers.NewZipHandler(l)
-
-	// Create new serveMux and register the handlers
+	// Create new serveMux
 	sm := mux.NewRouter()
 
+	// Register the health check handler
+	sm.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	// Create a sub-router for protected handlers
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.Use(middleware.JwtVerify)
 
-	getRouter.Handle("/zip/{reference}", zh)
-	getRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "I'm working")
-		l.Println("I'm Logging!")
-	})
+	// Register protected handlers
+	getRouter.Handle("/zip/{reference}", handlers.NewZipHandler(l))
 
 	s := &http.Server{
 		Addr:         ":8000",           // configure the bind address
