@@ -1,6 +1,7 @@
 package dynamo
 
 import (
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -12,7 +13,7 @@ import (
 )
 
 type Repository struct {
-	db     *dynamodb.DynamoDB
+	db     DBClient
 	logger *log.Logger
 	table  string
 }
@@ -63,6 +64,10 @@ func (repo Repository) Get(ref string) (*storage.Entry, error) {
 }
 
 func (repo Repository) Delete(entry *storage.Entry) error {
+	if entry == nil {
+		return errors.New("entry cannot be nil")
+	}
+
 	input := &dynamodb.DeleteItemInput{
 		TableName: &repo.table,
 		Key: map[string]*dynamodb.AttributeValue{
