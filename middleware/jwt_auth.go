@@ -49,8 +49,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			log.Println("JWT Token is valid for user ", he)
 
 			ctx := context.WithValue(r.Context(), HashedEmail{}, he)
-			r.WithContext(ctx)
-			next.ServeHTTP(rw, r)
+			next.ServeHTTP(rw, r.WithContext(ctx))
 		}
 	})
 }
