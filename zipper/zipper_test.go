@@ -1,6 +1,7 @@
 package zipper
 
 import (
+	"archive/zip"
 	"bytes"
 	"errors"
 	"github.com/aws/aws-sdk-go/aws"
@@ -15,19 +16,22 @@ import (
 
 func TestNewZipper(t *testing.T) {
 	sess, _ := session.NewSession()
-	rr := httptest.NewRecorder()
-	z := NewZipper(*sess, rr)
-	assert.Equal(t, rr, z.rw)
+	z := NewZipper(*sess)
+	assert.Nil(t, z.rw)
+	assert.Nil(t, z.zw)
+	assert.NotNil(t, z.s3)
 }
 
 func TestZipper_Open(t *testing.T) {
 	rr := httptest.NewRecorder()
-	z := Zipper{rw: rr}
-	z.Open()
+	z := Zipper{}
+	z.Open(rr)
 	hm := rr.Result().Header
 
 	assert.Equal(t, "application/zip", hm.Get("Content-Type"))
 	assert.Equal(t, "attachment; filename=\"download.zip\"", hm.Get("Content-Disposition"))
+	assert.Equal(t, rr, z.rw)
+	assert.IsType(t, new(zip.Writer), z.zw)
 }
 
 func TestZipper_Close(t *testing.T) {
@@ -39,6 +43,8 @@ func TestZipper_Close(t *testing.T) {
 	err := z.Close()
 
 	assert.Equal(t, e, err)
+	assert.Nil(t, z.rw)
+	assert.Nil(t, z.zw)
 	m.AssertExpectations(t)
 }
 

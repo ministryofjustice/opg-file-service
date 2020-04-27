@@ -29,7 +29,11 @@ func main() {
 	getRouter.Use(middleware.JwtVerify)
 
 	// Register protected handlers
-	getRouter.Handle("/zip/{reference}", handlers.NewZipHandler(l))
+	zh, err := handlers.NewZipHandler(l)
+	if err != nil {
+		l.Fatal(err)
+	}
+	getRouter.Handle("/zip/{reference}", zh)
 
 	s := &http.Server{
 		Addr:         ":8000",           // configure the bind address

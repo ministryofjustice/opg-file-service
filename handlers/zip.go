@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -13,13 +14,30 @@ import (
 )
 
 type ZipHandler struct {
+	repo   dynamo.RepositoryInterface
+	zipper zipper.ZipperInterface
 	logger *log.Logger
 }
 
-func NewZipHandler(logger *log.Logger) *ZipHandler {
-	return &ZipHandler{
-		logger,
+func NewZipHandler(logger *log.Logger) (*ZipHandler, error) {
+	// create a new AWS session
+	sess, err := session.NewSession()
+	if err != nil {
+		logger.Println(err.Error())
+		return nil, errors.New("unable to create a new session")
 	}
+
+	// create a new DynamoDB repo
+	repo := dynamo.NewRepository(*sess, logger)
+
+	// create a new ZipService
+	zipService := zipper.NewZipper(*sess)
+
+	return &ZipHandler{
+		repo,
+		zipService,
+		logger,
+	}, nil
 }
 
 func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
@@ -30,16 +48,8 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	reference := vars["reference"]
 	zh.logger.Println("Zip files for reference:", reference)
 
-	sess, err := session.NewSession()
-	if err != nil {
-		zh.logger.Println(err.Error())
-		internal.WriteJSONError(rw, "session", "Unable to start a new session", http.StatusInternalServerError)
-		return
-	}
-
-	repo := dynamo.NewRepository(*sess, zh.logger)
-
-	entry, err := repo.Get(reference)
+	// fetch entry from DynamoDB
+	entry, err := zh.repo.Get(reference)
 	if err != nil {
 		zh.logger.Println(err.Error())
 		internal.WriteJSONError(rw, "ref", "Reference token not found.", http.StatusNotFound)
@@ -59,12 +69,10 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	zipService := zipper.NewZipper(*sess, rw)
-
-	zipService.Open()
+	zh.zipper.Open(rw)
 
 	for _, file := range entry.Files {
-		err := zipService.AddFile(&file)
+		err := zh.zipper.AddFile(&file)
 		if err != nil {
 			zh.logger.Println(err.Error())
 			internal.WriteJSONError(rw, "zip", "Unable to zip requested file.", http.StatusInternalServerError)
@@ -72,12 +80,12 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = zipService.Close()
+	err = zh.zipper.Close()
 	if err != nil {
 		zh.logger.Println(err.Error())
 	}
 
-	err = repo.Delete(entry)
+	err = zh.repo.Delete(entry)
 	if err != nil {
 		zh.logger.Println(err.Error())
 		zh.logger.Println("Unable to delete reference ", entry.Ref)

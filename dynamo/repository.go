@@ -12,6 +12,11 @@ import (
 	"os"
 )
 
+type RepositoryInterface interface {
+	Get(ref string) (*storage.Entry, error)
+	Delete(entry *storage.Entry) error
+}
+
 type Repository struct {
 	db     DBClient
 	logger *log.Logger

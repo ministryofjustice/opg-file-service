@@ -14,13 +14,19 @@ import (
 	"strings"
 )
 
+type ZipperInterface interface {
+	Open(rw http.ResponseWriter)
+	Close() error
+	AddFile(f *storage.File) error
+}
+
 type Zipper struct {
 	rw http.ResponseWriter
 	zw ZipWriter
 	s3 Downloader
 }
 
-func NewZipper(sess session.Session, rw http.ResponseWriter) *Zipper {
+func NewZipper(sess session.Session) *Zipper {
 	endpoint := os.Getenv("AWS_S3_ENDPOINT")
 	sess.AwsSession.Config.Endpoint = &endpoint
 	sess.AwsSession.Config.S3ForcePathStyle = aws.Bool(true)
@@ -29,19 +35,22 @@ func NewZipper(sess session.Session, rw http.ResponseWriter) *Zipper {
 	downloader.Concurrency = 1
 
 	return &Zipper{
-		rw: rw,
-		zw: zip.NewWriter(rw),
 		s3: downloader,
 	}
 }
 
-func (z *Zipper) Open() {
+func (z *Zipper) Open(rw http.ResponseWriter) {
+	z.rw = rw
+	z.zw = zip.NewWriter(rw)
 	z.rw.Header().Add("Content-Disposition", "attachment; filename=\"download.zip\"")
 	z.rw.Header().Add("Content-Type", "application/zip")
 }
 
 func (z *Zipper) Close() error {
-	return z.zw.Close()
+	err := z.zw.Close()
+	z.rw = nil
+	z.zw = nil
+	return err
 }
 
 func (z *Zipper) AddFile(f *storage.File) error {
