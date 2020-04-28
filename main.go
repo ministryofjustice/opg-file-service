@@ -41,7 +41,7 @@ func main() {
 		ErrorLog:     l,                 // Set the logger for the server
 		IdleTimeout:  120 * time.Second, // max time fro connections using TCP Keep-Alive
 		ReadTimeout:  1 * time.Second,   // max time to read request from the client
-		WriteTimeout: 30 * time.Minute,  // max time to write response to the client TODO: discuss
+		WriteTimeout: 15 * time.Minute,  // max time to write response to the client
 	}
 
 	// start the server
