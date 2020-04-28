@@ -27,15 +27,9 @@ func NewZipHandler(logger *log.Logger) (*ZipHandler, error) {
 		return nil, errors.New("unable to create a new session")
 	}
 
-	// create a new DynamoDB repo
-	repo := dynamo.NewRepository(*sess, logger)
-
-	// create a new ZipService
-	zipService := zipper.NewZipper(*sess)
-
 	return &ZipHandler{
-		repo,
-		zipService,
+		dynamo.NewRepository(*sess, logger),
+		zipper.NewZipper(*sess),
 		logger,
 	}, nil
 }
@@ -46,6 +40,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// Get the reference from the request
 	vars := mux.Vars(r)
 	reference := vars["reference"]
+
 	zh.logger.Println("Zip files for reference:", reference)
 
 	// fetch entry from DynamoDB
@@ -57,14 +52,14 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	if entry.IsExpired() {
-		zh.logger.Println("Reference token has expired.")
+		zh.logger.Println("Reference token '" + reference + "' has expired.")
 		internal.WriteJSONError(rw, "ref", "Reference token has expired.", http.StatusNotFound)
 		return
 	}
 
 	userHash := r.Context().Value(middleware.HashedEmail{})
 	if entry.Hash != userHash {
-		zh.logger.Println("Access denied for user ", userHash)
+		zh.logger.Println("Access denied for user:", userHash)
 		internal.WriteJSONError(rw, "auth", "Access denied.", http.StatusForbidden)
 		return
 	}
@@ -88,7 +83,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	err = zh.repo.Delete(entry)
 	if err != nil {
 		zh.logger.Println(err.Error())
-		zh.logger.Println("Unable to delete reference ", entry.Ref)
+		zh.logger.Println("Unable to delete entry for reference", entry.Ref)
 	}
 
 	zh.logger.Println("Request took: ", time.Since(start))
