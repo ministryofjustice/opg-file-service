@@ -8,5 +8,5 @@ import (
 type DBClient interface {
 	GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
 	DeleteItem(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
-	//PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
+	PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
 }

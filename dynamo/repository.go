@@ -15,6 +15,7 @@ import (
 type RepositoryInterface interface {
 	Get(ref string) (*storage.Entry, error)
 	Delete(entry *storage.Entry) error
+	Add(entry *storage.Entry) error
 }
 
 type Repository struct {
@@ -85,4 +86,27 @@ func (repo Repository) Delete(entry *storage.Entry) error {
 	_, err := repo.db.DeleteItem(input)
 
 	return err
+}
+
+func (repo Repository) Add(entry *storage.Entry) error {
+	if entry == nil {
+		return errors.New("entry cannot be nil")
+	}
+
+	av, err := dynamodbattribute.MarshalMap(entry)
+	if err != nil {
+		return err
+	}
+
+	input := &dynamodb.PutItemInput{
+		TableName: &repo.table,
+		Item:      av,
+	}
+
+	_, err = repo.db.PutItem(input)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

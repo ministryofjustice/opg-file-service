@@ -20,6 +20,11 @@ func (m MockRepository) Delete(entry *storage.Entry) error {
 	return args.Error(0)
 }
 
+func (m MockRepository) Add(entry *storage.Entry) error {
+	args := m.Called(entry)
+	return args.Error(0)
+}
+
 type MockZipper struct {
 	mock.Mock
 }

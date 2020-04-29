@@ -2,7 +2,7 @@ package storage
 
 import (
 	"archive/zip"
-	"fmt"
+	"errors"
 	"regexp"
 	"strings"
 )
@@ -41,8 +41,22 @@ func (f *File) GetPathInZip() string {
 
 	file := regex.ReplaceAllString(f.FileName, "")
 	if file == "" {
-		file = fmt.Sprint("undefined") // default filename
+		file = "undefined" // default filename
 	}
 
 	return path + file
+}
+
+func (f *File) Validate() (bool, []error) {
+	var errs []error
+
+	if f.S3path == "" {
+		errs = append(errs, errors.New("S3Path cannot be blank"))
+	}
+
+	if f.FileName == "" {
+		errs = append(errs, errors.New("FileName cannot be blank"))
+	}
+
+	return len(errs) == 0, errs
 }

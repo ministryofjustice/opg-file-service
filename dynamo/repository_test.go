@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"opg-file-service/session"
@@ -233,6 +234,56 @@ func TestRepository_Delete(t *testing.T) {
 		mdb.On("DeleteItem", &input).Return(new(dynamodb.DeleteItemOutput), test.dbErr).Once()
 
 		err := repo.Delete(test.entry)
+
+		assert.Equal(t, test.wantErr, err, test.scenario)
+	}
+}
+
+func TestRepository_Add(t *testing.T) {
+	tests := []struct {
+		scenario string
+		entry    *storage.Entry
+		dbErr    error
+		wantErr  error
+	}{
+		{
+			"Entry added successfully",
+			&storage.Entry{},
+			nil,
+			nil,
+		},
+		{
+			"Error from DB client",
+			&storage.Entry{},
+			errors.New("some DB error"),
+			errors.New("some DB error"),
+		},
+		{
+			"Nil entry parameter",
+			nil,
+			nil,
+			errors.New("entry cannot be nil"),
+		},
+	}
+
+	for _, test := range tests {
+		mdb := MockDynamoDB{}
+
+		repo := Repository{
+			db:     &mdb,
+			logger: &log.Logger{},
+			table:  "table",
+		}
+
+		av, _ := dynamodbattribute.MarshalMap(test.entry)
+		input := dynamodb.PutItemInput{
+			TableName: &repo.table,
+			Item:      av,
+		}
+
+		mdb.On("PutItem", &input).Return(new(dynamodb.PutItemOutput), test.dbErr).Once()
+
+		err := repo.Add(test.entry)
 
 		assert.Equal(t, test.wantErr, err, test.scenario)
 	}
