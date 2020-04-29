@@ -2,7 +2,7 @@
 version: "3.6"
 
 services:
-  zipper:
+  file_service:
     build: .
     ports:
       - 8000:8000
@@ -15,5 +15,5 @@ services:
       HOSTNAME_EXTERNAL: localstack
       SERVICES: s3
       DATA_DIR: /tmp/localstack/data
-    volumes: 
+    volumes:
       - './tmp:/tmp/localstack'
