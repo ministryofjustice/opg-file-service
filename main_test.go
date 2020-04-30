@@ -105,15 +105,19 @@ func (suite *EndToEndTestSuite) ClearFixtures() {
 	suite.repo.Delete(suite.testEntry)
 }
 
+func (suite *EndToEndTestSuite) GetUrl(path string) string {
+	return "http://localhost:8000/" + os.Getenv("PATH_PREFIX") + path
+}
+
 func (suite *EndToEndTestSuite) TestHealthCheck() {
-	resp, err := http.Get("http://localhost:8000/health-check")
+	resp, err := http.Get(suite.GetUrl("/health-check"))
 	suite.Nil(err)
 	suite.Equal(http.StatusOK, resp.StatusCode)
 }
 
 func (suite *EndToEndTestSuite) TestZip() {
 	// download zip file
-	req, _ := http.NewRequest("GET", "http://localhost:8000/zip/test", nil)
+	req, _ := http.NewRequest("GET", suite.GetUrl("/zip/test"), nil)
 	req.Header.Set("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6OTk5OTk5OTk5OSwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.8HtN6aTAnE2YFI9rJD8drzqgrXPkyUbwRRJymcPSmHk")
 	client := new(http.Client)
 	resp, err := client.Do(req)
