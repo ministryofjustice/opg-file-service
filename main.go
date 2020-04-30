@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/gorilla/mux"
-	_ "github.com/nicholasjackson/env"
 	"log"
 	"net/http"
 	"opg-file-service/handlers"
@@ -16,22 +14,26 @@ import (
 
 func main() {
 	// Create a Logger
-	l := log.New(os.Stdout, "zipper-service ", log.LstdFlags)
+	l := log.New(os.Stdout, "opg-file-service ", log.LstdFlags)
 
-	// create the handlers
-	dh := handlers.NewDocuments(l)
-
-	//Create new serveMux and register the handlers
+	// Create new serveMux
 	sm := mux.NewRouter()
 
+	// Register the health check handler
+	sm.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	// Create a sub-router for protected handlers
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.Use(middleware.JwtVerify)
 
-	getRouter.HandleFunc("/zip-documents/{reference}", dh.GetDocuments)
-	getRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "I'm working")
-		l.Println("I'm Logging!")
-	})
+	// Register protected handlers
+	zh, err := handlers.NewZipHandler(l)
+	if err != nil {
+		l.Fatal(err)
+	}
+	getRouter.Handle("/zip/{reference}", zh)
 
 	s := &http.Server{
 		Addr:         ":8000",           // configure the bind address
@@ -39,7 +41,7 @@ func main() {
 		ErrorLog:     l,                 // Set the logger for the server
 		IdleTimeout:  120 * time.Second, // max time fro connections using TCP Keep-Alive
 		ReadTimeout:  1 * time.Second,   // max time to read request from the client
-		WriteTimeout: 1 * time.Second,   // max time to write response to the client
+		WriteTimeout: 15 * time.Minute,  // max time to write response to the client
 	}
 
 	// start the server
@@ -52,8 +54,7 @@ func main() {
 
 	// Gracefully shutdown when signal received
 	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, os.Kill)
+	signal.Notify(c, os.Interrupt, os.Kill)
 
 	sig := <-c
 	l.Println("Received terminate, graceful shutdown", sig)

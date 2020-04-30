@@ -6,14 +6,16 @@ services:
     build: .
     ports:
       - 8000:8000
-    environment:
-      GOPATH: /go/src
+    env_file:
+      - docker-compose.env
   localstack:
     image: localstack/localstack:0.10.5
     environment:
       DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
-      SERVICES: s3
-      DATA_DIR: /tmp/localstack/data
+      SERVICES: s3,dynamodb
+    ports:
+      - 4569:4569
+      - 4572:4572
     volumes:
-      - './tmp:/tmp/localstack'
+      - "./scripts/localstack:/docker-entrypoint-initaws.d"
