@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/devkokov/gohealthcheck"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 )
 
 func main() {
+	gohealthcheck.Register("http://localhost:8000" + os.Getenv("PATH_PREFIX") + "/health-check")
+
 	// Create a Logger
 	l := log.New(os.Stdout, "opg-file-service ", log.LstdFlags)
 
