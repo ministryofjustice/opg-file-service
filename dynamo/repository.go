@@ -43,7 +43,7 @@ func (repo Repository) Get(ref string) (*storage.Entry, error) {
 	result, err := repo.db.GetItem(&dynamodb.GetItemInput{
 		TableName: &repo.table,
 		Key: map[string]*dynamodb.AttributeValue{
-			"ref": {
+			"Ref": {
 				S: aws.String(ref),
 			},
 		},
@@ -77,7 +77,7 @@ func (repo Repository) Delete(entry *storage.Entry) error {
 	input := &dynamodb.DeleteItemInput{
 		TableName: &repo.table,
 		Key: map[string]*dynamodb.AttributeValue{
-			"ref": {
+			"Ref": {
 				S: aws.String(entry.Ref),
 			},
 		},

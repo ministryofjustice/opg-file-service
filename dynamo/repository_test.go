@@ -68,7 +68,7 @@ func TestNewRepository(t *testing.T) {
 
 func newValidGetItemOutput(ref string) *dynamodb.GetItemOutput {
 	item := map[string]*dynamodb.AttributeValue{
-		"files": {
+		"Files": {
 			L: []*dynamodb.AttributeValue{
 				{
 					M: map[string]*dynamodb.AttributeValue{
@@ -85,13 +85,13 @@ func newValidGetItemOutput(ref string) *dynamodb.GetItemOutput {
 				},
 			},
 		},
-		"hash": {
+		"Hash": {
 			S: aws.String("testHash"),
 		},
-		"ref": {
+		"Ref": {
 			S: &ref,
 		},
-		"ttl": {
+		"Ttl": {
 			N: aws.String("0"),
 		},
 	}
@@ -165,7 +165,7 @@ func TestRepository_Get(t *testing.T) {
 		input := dynamodb.GetItemInput{
 			TableName: &repo.table,
 			Key: map[string]*dynamodb.AttributeValue{
-				"ref": {
+				"Ref": {
 					S: &test.ref,
 				},
 			},
@@ -225,7 +225,7 @@ func TestRepository_Delete(t *testing.T) {
 		input := dynamodb.DeleteItemInput{
 			TableName: &repo.table,
 			Key: map[string]*dynamodb.AttributeValue{
-				"ref": {
+				"Ref": {
 					S: &ref,
 				},
 			},
