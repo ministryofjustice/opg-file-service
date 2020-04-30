@@ -17,6 +17,11 @@ orbs:
           - run:
               name: Install AWS CLI
               command: sudo pip3 install awscli --upgrade
+      install_aws_local_wrapper:
+        steps:
+          - run:
+              name: Install AWS Local Wrapper
+              command: sudo pip3 install awscli-local --upgrade
       ecr_login:
         steps:
           - run:
@@ -35,17 +40,48 @@ jobs:
   test_file_service:
     docker:
       - image: circleci/golang
+      - image: localstack/localstack:0.10.5
     environment:
       TEST_RESULTS: /tmp/test-results
       GOTESTSUM_FORMAT: short-verbose
+      DEFAULT_REGION: eu-west-1
+      HOSTNAME_EXTERNAL: localstack
+      SERVICES: s3
+      DATA_DIR: /tmp/localstack/data
+      AWS_ACCESS_KEY_ID: localstack
+      AWS_SECRET_ACCESS_KEY: localstack
+      AWS_S3_ENDPOINT: http://localhost:4572
+      AWS_DYNAMODB_ENDPOINT: http://localhost:4569
     steps:
       - checkout
       - run:
-          name: go_mod
+          name: Install PiP
+          command: |
+                sudo apt update
+                sudo apt install python3-venv python3-pip
+      - file_service/install_aws_cli
+      - file_service/install_aws_local_wrapper
+      - run:
+          name: Setup DynamoDB
+          command: |
+            # Create a DynamoDB table
+            awslocal dynamodb create-table \
+              --table-name zip-requests \
+              --attribute-definitions AttributeName=Ref,AttributeType=S \
+              --key-schema AttributeName=Ref,KeyType=HASH \
+              --provisioned-throughput ReadCapacityUnits=1000,WriteCapacityUnits=1000
+
+            # Set automatic expiry of records based on the ttl attribute
+            awslocal dynamodb update-time-to-live \
+              --table-name zip-requests \
+              --time-to-live-specification "Enabled=true, AttributeName=Ttl"
+
+      - run:
+          name: Install Go Modules Dependencies
           command: go mod download
       - run: mkdir -p $TEST_RESULTS
       - run:
-          name: unit_tests
+          name: Run Unit and Intergration Tests
           command: gotestsum --junitfile unit-tests.xml
       - store_test_results:
           path: /tmp/test-results
