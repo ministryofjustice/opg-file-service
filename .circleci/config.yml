@@ -32,6 +32,22 @@ orbs:
                 export AWS_SECRET_ACCESS_KEY=$(echo $temp_role | jq .Credentials.SecretAccessKey | xargs)
                 export AWS_SESSION_TOKEN=$(echo $temp_role | jq .Credentials.SessionToken | xargs)
                 eval $(aws ecr get-login --no-include-email --region=eu-west-1)
+      test_localstack_setup:
+        steps:
+          - run:
+              name: Localstack DynamoDB Setup
+              command: |
+                # Create a DynamoDB table
+                awslocal dynamodb create-table \
+                  --table-name zip-requests \
+                  --attribute-definitions AttributeName=Ref,AttributeType=S \
+                  --key-schema AttributeName=Ref,KeyType=HASH \
+                  --provisioned-throughput ReadCapacityUnits=1000,WriteCapacityUnits=1000
+
+                # Set automatic expiry of records based on the ttl attribute
+                awslocal dynamodb update-time-to-live \
+                  --table-name zip-requests \
+                  --time-to-live-specification "Enabled=true, AttributeName=Ttl"
     executors:
       python:
         docker: [image: circleci/python]
@@ -40,18 +56,18 @@ jobs:
   test_file_service:
     docker:
       - image: circleci/golang
+        environment:
+          TEST_RESULTS: /tmp/test-results
+          GOTESTSUM_FORMAT: short-verbose
+          DATA_DIR: /tmp/localstack/data
+          AWS_ACCESS_KEY_ID: localstack
+          AWS_SECRET_ACCESS_KEY: localstack
+          AWS_S3_ENDPOINT: http://localhost:4572
+          AWS_DYNAMODB_ENDPOINT: http://localhost:4569
       - image: localstack/localstack:0.10.5
-    environment:
-      TEST_RESULTS: /tmp/test-results
-      GOTESTSUM_FORMAT: short-verbose
-      DEFAULT_REGION: eu-west-1
-      HOSTNAME_EXTERNAL: localstack
-      SERVICES: s3
-      DATA_DIR: /tmp/localstack/data
-      AWS_ACCESS_KEY_ID: localstack
-      AWS_SECRET_ACCESS_KEY: localstack
-      AWS_S3_ENDPOINT: http://localhost:4572
-      AWS_DYNAMODB_ENDPOINT: http://localhost:4569
+        environment:
+          DEFAULT_REGION: eu-west-1
+          SERVICES: s3,dynamodb
     steps:
       - checkout
       - run:
@@ -61,21 +77,7 @@ jobs:
                 sudo apt install python3-venv python3-pip
       - file_service/install_aws_cli
       - file_service/install_aws_local_wrapper
-      - run:
-          name: Setup DynamoDB
-          command: |
-            # Create a DynamoDB table
-            awslocal dynamodb create-table \
-              --table-name zip-requests \
-              --attribute-definitions AttributeName=Ref,AttributeType=S \
-              --key-schema AttributeName=Ref,KeyType=HASH \
-              --provisioned-throughput ReadCapacityUnits=1000,WriteCapacityUnits=1000
-
-            # Set automatic expiry of records based on the ttl attribute
-            awslocal dynamodb update-time-to-live \
-              --table-name zip-requests \
-              --time-to-live-specification "Enabled=true, AttributeName=Ttl"
-
+      - file_service/test_localstack_setup
       - run:
           name: Install Go Modules Dependencies
           command: go mod download
