@@ -17,6 +17,11 @@ orbs:
           - run:
               name: Install AWS CLI
               command: sudo pip3 install awscli --upgrade
+      install_aws_local_wrapper:
+        steps:
+          - run:
+              name: Install AWS Local Wrapper
+              command: sudo pip3 install awscli-local --upgrade
       ecr_login:
         steps:
           - run:
@@ -27,6 +32,14 @@ orbs:
                 export AWS_SECRET_ACCESS_KEY=$(echo $temp_role | jq .Credentials.SecretAccessKey | xargs)
                 export AWS_SESSION_TOKEN=$(echo $temp_role | jq .Credentials.SessionToken | xargs)
                 eval $(aws ecr get-login --no-include-email --region=eu-west-1)
+      test_localstack_setup:
+        steps:
+          - run:
+              name: Localstack DynamoDB Setup
+              command: |
+                cd scripts/localstack
+                chmod +x localstack_init.sh
+                ./localstack_init.sh
     executors:
       python:
         docker: [image: circleci/python]
@@ -35,17 +48,34 @@ jobs:
   test_file_service:
     docker:
       - image: circleci/golang
-    environment:
-      TEST_RESULTS: /tmp/test-results
-      GOTESTSUM_FORMAT: short-verbose
+        environment:
+          TEST_RESULTS: /tmp/test-results
+          GOTESTSUM_FORMAT: short-verbose
+          DATA_DIR: /tmp/localstack/data
+          AWS_ACCESS_KEY_ID: localstack
+          AWS_SECRET_ACCESS_KEY: localstack
+          AWS_S3_ENDPOINT: http://localhost:4572
+          AWS_DYNAMODB_ENDPOINT: http://localhost:4569
+      - image: localstack/localstack:0.10.5
+        environment:
+          DEFAULT_REGION: eu-west-1
+          SERVICES: s3,dynamodb
     steps:
       - checkout
       - run:
-          name: go_mod
+          name: Install PiP
+          command: |
+                sudo apt update
+                sudo apt install python3-venv python3-pip
+      - file_service/install_aws_cli
+      - file_service/install_aws_local_wrapper
+      - file_service/test_localstack_setup
+      - run:
+          name: Install Go Modules Dependencies
           command: go mod download
       - run: mkdir -p $TEST_RESULTS
       - run:
-          name: unit_tests
+          name: Run Unit and Intergration Tests
           command: gotestsum --junitfile unit-tests.xml
       - store_test_results:
           path: /tmp/test-results
