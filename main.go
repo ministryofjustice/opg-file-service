@@ -17,7 +17,7 @@ func main() {
 	l := log.New(os.Stdout, "opg-file-service ", log.LstdFlags)
 
 	// Create new serveMux
-	sm := mux.NewRouter()
+	sm := mux.NewRouter().PathPrefix(os.Getenv("PATH_PREFIX")).Subrouter()
 
 	// Register the health check handler
 	sm.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {

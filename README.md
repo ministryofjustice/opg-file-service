@@ -23,3 +23,4 @@ Small microservice built with go to enable users of sirius to download files fro
 | AWS_REGION                | eu-west-1                         | Set the AWS region for all operations with the SDK                                                              |
 | AWS_ACCESS_KEY_ID         |                                   | Used for authenticating with localstack e.g. set to "localstack"                                                |
 | AWS_SECRET_ACCESS_KEY     |                                   | Used for authenticating with localstack e.g. set to "localstack"                                                |
+| PATH_PREFIX               |                                   | Path prefix where all requested will be routed                                                                  |
