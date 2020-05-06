@@ -11,6 +11,11 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/zipper
 
-FROM scratch
+FROM alpine:3.10
+
+RUN apk --update --no-cache add \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
 COPY --from=build-env /go/bin/zipper /go/bin/zipper
 ENTRYPOINT ["/go/bin/zipper"]
