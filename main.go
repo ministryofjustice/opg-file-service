@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 	"log"
 	"net/http"
 	"opg-file-service/handlers"
@@ -13,6 +14,8 @@ import (
 )
 
 func main() {
+	healthcheck.Register("http://localhost:8000" + os.Getenv("PATH_PREFIX") + "/health-check")
+
 	// Create a Logger
 	l := log.New(os.Stdout, "opg-file-service ", log.LstdFlags)
 
