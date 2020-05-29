@@ -8,9 +8,10 @@ import (
 )
 
 type File struct {
-	S3path   string
-	FileName string
-	Folder   string
+	S3path         string
+	FileName       string
+	Folder         string
+	OutputFilePath string
 }
 
 func (f *File) GetZipFileHeader() *zip.FileHeader {
