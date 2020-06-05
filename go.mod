@@ -9,5 +9,4 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/stretchr/testify v1.5.1
-	github.com/thoas/go-funk v0.6.0
 )

@@ -15,7 +15,7 @@ type Entry struct {
 
 type fileCounter struct {
 	filename string
-	count int
+	count    int
 }
 
 func (entry Entry) IsExpired() bool {
@@ -54,7 +54,7 @@ func (entry Entry) Validate() (bool, []error) {
 }
 
 func (entry Entry) DeDupe() {
-	type fileCounter struct{
+	type fileCounter struct {
 		filename string
 		count    int
 	}
@@ -64,17 +64,19 @@ func (entry Entry) DeDupe() {
 	for i, file := range entry.Files {
 		foundMatch := false
 		for j, fileAdded := range filesAdded {
-			if fileAdded.filename == file.GetRelativePath() {
-				fileNameWithouExt, extension := file.GetFileNameAndExtension()
-
-				if len(extension) > 0 {
-					extension = "." + extension
-				}
-
-				entry.Files[i].FileName = fileNameWithouExt + " (" + strconv.Itoa(filesAdded[j].count) + ")" + extension
-				foundMatch = true
-				filesAdded[j].count++
+			if fileAdded.filename != file.GetRelativePath() {
+				continue
 			}
+
+			fileNameWithoutExt, extension := file.GetFileNameAndExtension()
+
+			if len(extension) > 0 {
+				extension = "." + extension
+			}
+
+			entry.Files[i].FileName = fileNameWithoutExt + " (" + strconv.Itoa(filesAdded[j].count) + ")" + extension
+			foundMatch = true
+			filesAdded[j].count++
 		}
 
 		if !foundMatch {

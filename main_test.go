@@ -45,11 +45,6 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 		Bucket: suite.bucket,
 	})
 
-	//myStrings := []string{
-	//	"Bill",
-	//}
-	//log.Println(myStrings)
-
 	// define fixtures
 	suite.testEntry = &storage.Entry{
 		Ref:  "test",
@@ -113,14 +108,6 @@ func (suite *EndToEndTestSuite) ClearFixtures() {
 func (suite *EndToEndTestSuite) GetUrl(path string) string {
 	return "http://localhost:8000/" + os.Getenv("PATH_PREFIX") + path
 }
-//
-//
-//func (suite *EndToEndTestSuite) TestBlah() {
-//	suite.Equal("one", "two")
-//	//resp, err := http.Get("http://google.co.uk")
-//	//suite.Nil(err)
-//	//suite.Equal(http.StatusOK, resp.StatusCode)
-//}
 
 func (suite *EndToEndTestSuite) TestHealthCheck() {
 	resp, err := http.Get(suite.GetUrl("/health-check"))

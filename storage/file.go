@@ -8,9 +8,9 @@ import (
 )
 
 type File struct {
-	S3path         string
-	FileName       string
-	Folder         string
+	S3path   string
+	FileName string
+	Folder   string
 }
 
 func (f *File) GetZipFileHeader() *zip.FileHeader {
@@ -67,7 +67,7 @@ func (f *File) GetFileNameAndExtension() (string, string) {
 	fileNameWithoutExt := f.FileName
 	if len(bits) > 1 {
 		extension = bits[len(bits)-1]
-		theRest := bits[0:len(bits)-1]
+		theRest := bits[0 : len(bits)-1]
 		fileNameWithoutExt = strings.Join(theRest, ".")
 	}
 	return fileNameWithoutExt, extension
