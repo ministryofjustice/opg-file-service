@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"strconv"
 	"time"
 )
 
@@ -10,6 +11,11 @@ type Entry struct {
 	Hash  string
 	Ttl   int64 // Unix timestamp
 	Files []File
+}
+
+type fileCounter struct {
+	filename string
+	count int
 }
 
 func (entry Entry) IsExpired() bool {
@@ -45,4 +51,34 @@ func (entry Entry) Validate() (bool, []error) {
 	}
 
 	return len(errs) == 0, errs
+}
+
+func (entry Entry) DeDupe() {
+	type fileCounter struct{
+		filename string
+		count    int
+	}
+
+	var filesAdded []fileCounter
+
+	for i, file := range entry.Files {
+		foundMatch := false
+		for j, fileAdded := range filesAdded {
+			if fileAdded.filename == file.GetRelativePath() {
+				fileNameWithouExt, extension := file.GetFileNameAndExtension()
+
+				if len(extension) > 0 {
+					extension = "." + extension
+				}
+
+				entry.Files[i].FileName = fileNameWithouExt + " (" + strconv.Itoa(filesAdded[j].count) + ")" + extension
+				foundMatch = true
+				filesAdded[j].count++
+			}
+		}
+
+		if !foundMatch {
+			filesAdded = append(filesAdded, fileCounter{file.GetRelativePath(), 1})
+		}
+	}
 }

@@ -33,6 +33,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 		userHash     string
 		repoGetCalls int
 		repoGetOut   *storage.Entry
+		filesInZip	 *[]storage.File
 		repoGetErr   error
 		repoDelCalls int
 		repoDelErr   error
@@ -51,6 +52,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			0,
 			nil,
 			nil,
+			nil,
 			0,
 			nil,
 			0,
@@ -66,6 +68,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			"test",
 			"",
 			1,
+			nil,
 			nil,
 			storage.NotFoundError{Ref: "test"},
 			0,
@@ -91,6 +94,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 				Ttl: 0,
 			},
 			nil,
+			nil,
 			0,
 			nil,
 			0,
@@ -114,6 +118,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 				Ttl:  9999999999,
 			},
 			nil,
+			nil,
 			0,
 			nil,
 			0,
@@ -136,6 +141,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 				Ttl:   9999999999,
 				Files: []storage.File{{}},
 			},
+			&[]storage.File{{}},
 			nil,
 			0,
 			nil,
@@ -159,6 +165,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 				Ttl: 9999999999,
 			},
 			nil,
+			nil,
 			1,
 			nil,
 			0,
@@ -180,6 +187,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 				Ref: "test",
 				Ttl: 9999999999,
 			},
+			nil,
 			nil,
 			1,
 			errors.New("some error deleting entry"),
@@ -215,10 +223,22 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 					},
 				},
 			},
+			&[]storage.File{
+				{
+					S3path:   "s3://files/file",
+					FileName: "file",
+					Folder:   "",
+				},
+				{
+					S3path:   "s3://files/file",
+					FileName: "file (1)",
+					Folder:   "",
+				},
+			},
 			nil,
 			1,
 			nil,
-			2,
+			1,
 			nil,
 			1,
 			1,
@@ -259,7 +279,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 		mz.On("Open", rr).Return().Times(test.openCalls)
 		mz.On("Close").Return(test.closeErr).Times(test.closeCalls)
 		if test.repoGetOut != nil && len(test.repoGetOut.Files) > 0 {
-			for _, file := range test.repoGetOut.Files {
+			for _, file := range *test.filesInZip {
 				mz.On("AddFile", &file).Return(test.addFileErr).Times(test.addFileCalls)
 			}
 		}
