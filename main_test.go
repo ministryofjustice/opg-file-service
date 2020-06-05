@@ -15,6 +15,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 type EndToEndTestSuite struct {
@@ -167,6 +168,9 @@ func (suite *EndToEndTestSuite) TestZip() {
 		fb, _ := ioutil.ReadAll(fo)
 		got[file.Name] = string(fb)
 		fo.Close()
+
+		// assert that file's modified date is within 5 seconds from now
+		suite.InDelta(time.Now().Unix(), file.Modified.Unix(), 5)
 	}
 
 	suite.Equal(want, got)
