@@ -119,7 +119,7 @@ func (suite *EndToEndTestSuite) TestHealthCheck() {
 func (suite *EndToEndTestSuite) TestZip() {
 	// download zip file
 	req, _ := http.NewRequest("GET", suite.GetUrl("/zip/test"), nil)
-	req.Header.Set("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6OTk5OTk5OTk5OSwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.pQgWXQOz9VULzqwZtXvFidJmEaX1nBtX4qyw8LqSVV4")
+	req.Header.Set("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6OTk5OTk5OTk5OSwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.8HtN6aTAnE2YFI9rJD8drzqgrXPkyUbwRRJymcPSmHk")
 	client := new(http.Client)
 	resp, err := client.Do(req)
 	if err != nil {
