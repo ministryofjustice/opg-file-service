@@ -16,7 +16,7 @@ type HashedEmail struct{}
 
 func JwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		jwtSecret := internal.GetEnvVar("JWT_SECRET", "MyTestSecret")
+		jwtSecret := internal.GetEnvVar("JWT_SECRET", "SeCrEtKeYkNoWnOnLyToMe")
 
 		//Get the token from the header
 		header := r.Header.Get("Authorization")
