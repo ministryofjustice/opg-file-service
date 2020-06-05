@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"net/http/httptest"
 	"opg-file-service/session"
 	"opg-file-service/storage"
@@ -128,7 +129,7 @@ func TestZipper_AddFile(t *testing.T) {
 		}
 
 		buf := new(bytes.Buffer)
-		mz.On("CreateHeader", f.GetZipFileHeader()).Return(buf, test.createHeaderError)
+		mz.On("CreateHeader", mock.AnythingOfType("*zip.FileHeader")).Return(buf, test.createHeaderError)
 
 		s3input := s3.GetObjectInput{
 			Bucket: aws.String(test.expectedS3Bucket),

@@ -64,6 +64,8 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	entry.DeDupe()
+
 	zh.zipper.Open(rw)
 
 	for _, file := range entry.Files {

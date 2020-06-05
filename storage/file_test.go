@@ -13,10 +13,10 @@ func TestFile_GetZipFileHeader(t *testing.T) {
 		Folder:   "folder",
 	}
 	fh := f.GetZipFileHeader()
-	assert.Equal(t, f.GetPathInZip(), fh.Name)
+	assert.Equal(t, f.GetRelativePath(), fh.Name)
 }
 
-func TestFile_GetPathInZip(t *testing.T) {
+func TestFile_GetRelativePath(t *testing.T) {
 	tests := []struct {
 		fileName string
 		folder   string
@@ -37,7 +37,28 @@ func TestFile_GetPathInZip(t *testing.T) {
 	for _, test := range tests {
 		file.FileName = test.fileName
 		file.Folder = test.folder
-		assert.Equal(t, test.want, file.GetPathInZip())
+		assert.Equal(t, test.want, file.GetRelativePath())
+	}
+}
+
+func TestFile_GetFileNameAndExtension(t *testing.T) {
+	tests := []struct {
+	    scenario        string
+		filename        string
+		wantFilename    string
+		wantExtension   string
+	}{
+		{"Filename with one dot", "filename.txt", "filename", "txt"},
+        {"Filename with mutiple dots", "filename.something.txt", "filename.something", "txt"},
+        {"Filename with no file extension", "filename", "filename", ""},
+	}
+
+    file := File{}
+	for _, test := range tests {
+		file.FileName = test.filename
+		filename, extension := file.GetFileNameAndExtension()
+		assert.Equal(t, test.wantFilename, filename, test.scenario)
+        assert.Equal(t, test.wantExtension, extension, test.scenario)
 	}
 }
 

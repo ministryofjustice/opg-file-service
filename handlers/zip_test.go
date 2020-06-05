@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -258,10 +259,9 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 
 		mz.On("Open", rr).Return().Times(test.openCalls)
 		mz.On("Close").Return(test.closeErr).Times(test.closeCalls)
-		if test.repoGetOut != nil && len(test.repoGetOut.Files) > 0 {
-			for _, file := range test.repoGetOut.Files {
-				mz.On("AddFile", &file).Return(test.addFileErr).Times(test.addFileCalls)
-			}
+
+		if test.addFileCalls > 0 {
+			mz.On("AddFile", mock.AnythingOfType("*storage.File")).Return(test.addFileErr).Times(test.addFileCalls)
 		}
 
 		sm.ServeHTTP(rr, req.WithContext(ctx))

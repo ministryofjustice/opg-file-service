@@ -5,6 +5,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type File struct {
@@ -17,13 +18,14 @@ func (f *File) GetZipFileHeader() *zip.FileHeader {
 	// We have to set a special flag so zip files recognize utf file names
 	// See http://stackoverflow.com/questions/30026083/creating-a-zip-archive-with-unicode-filenames-using-gos-archive-zip
 	return &zip.FileHeader{
-		Name:   f.GetPathInZip(),
-		Method: zip.Deflate,
-		Flags:  0x800,
+		Name:     f.GetRelativePath(),
+		Method:   zip.Deflate,
+		Flags:    0x800,
+		Modified: time.Now(),
 	}
 }
 
-func (f *File) GetPathInZip() string {
+func (f *File) GetRelativePath() string {
 	// regex for getting a safe filename and folder
 	regex := regexp.MustCompile(`[#\[\]<>:"/|?*\\]`)
 
@@ -59,4 +61,16 @@ func (f *File) Validate() (bool, []error) {
 	}
 
 	return len(errs) == 0, errs
+}
+
+func (f *File) GetFileNameAndExtension() (string, string) {
+	bits := strings.Split(f.FileName, ".")
+	extension := ""
+	fileNameWithoutExt := f.FileName
+	if len(bits) > 1 {
+		extension = bits[len(bits)-1]
+		theRest := bits[0 : len(bits)-1]
+		fileNameWithoutExt = strings.Join(theRest, ".")
+	}
+	return fileNameWithoutExt, extension
 }
