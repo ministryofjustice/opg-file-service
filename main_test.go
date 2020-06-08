@@ -159,6 +159,8 @@ func (suite *EndToEndTestSuite) TestZip() {
 		want[fn] = "contents of " + file.FileName
 	}
 
+	loc, _ := time.LoadLocation("Europe/London")
+
 	// loop through files in zip and do the same mapping
 	for _, file := range rc.File {
 		if file.FileInfo().IsDir() {
@@ -170,7 +172,7 @@ func (suite *EndToEndTestSuite) TestZip() {
 		fo.Close()
 
 		// assert that file's modified date is within 5 seconds from now
-		suite.InDelta(time.Now().Unix(), file.Modified.Unix(), 5)
+		suite.InDelta(time.Now().In(loc).Unix(), file.Modified.Unix(), 5)
 	}
 
 	suite.Equal(want, got)

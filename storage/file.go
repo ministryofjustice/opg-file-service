@@ -15,13 +15,15 @@ type File struct {
 }
 
 func (f *File) GetZipFileHeader() *zip.FileHeader {
+	loc, _ := time.LoadLocation("Europe/London")
+
 	// We have to set a special flag so zip files recognize utf file names
 	// See http://stackoverflow.com/questions/30026083/creating-a-zip-archive-with-unicode-filenames-using-gos-archive-zip
 	return &zip.FileHeader{
 		Name:     f.GetRelativePath(),
 		Method:   zip.Deflate,
 		Flags:    0x800,
-		Modified: time.Now(),
+		Modified: time.Now().In(loc),
 	}
 }
 
