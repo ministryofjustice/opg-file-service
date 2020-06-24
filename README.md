@@ -1,17 +1,56 @@
 # opg-file-service
 
-Small microservice built with go to enable users of sirius to download files from s3.
+Small microservice built with Go to enable users of Sirius to download multiple files from S3.
 
 ## Local Development
     
 ### Required Tools
 
  - Go 1.14.2
- - [GoTestSum](https://github.com/gotestyourself/gotestsum)
- - Docker
+ - Docker with docker-compose
  
-## Environment Variables
+### Optional Tools
 
+- [GoTestSum](https://github.com/gotestyourself/gotestsum) - `go test` runner with optimized output
+
+### Development environment
+
+Use docker-compose commands to build/start/stop the service locally e.g. `docker-compose up --build` will rebuild and start the service.
+
+By default the local URL is http://localhost:8000/services/file-service, where `/services/file-service` is configured by the `PATH_PREFIX` ENV variable.
+
+### Tests
+
+Run `make test` to execute the test suites and output code coverage for each package.
+
+#### End-to-end tests
+
+End-to-end tests are executed as part of the `make test` command.
+
+Generally they sit in `main_test.go`. The test suite will start up the file service in a go-routine to run tests against it, and therefore all ENV variables required for configuring the service have to be set prior to running the test suite. This is all automated with the `make test` command. 
+
+## Endpoints
+
+- `GET /health-check` - returns a 200 status code if the file service is running
+- `POST /zip` - _TODO_ - Creates a new Zip request and stores it in the database. On success it returns a Reference token that can be used in the `GET /zip/{reference}` endpoint to download the zip.
+- `GET /zip/{reference}` - Finds a Zip request by Reference and streams a zip of all files associated with the Zip request.
+
+## Authentication
+
+All requests (except for `health-check` endpoint) are passed through a JWT authentication middleware that performs the following checks:
+
+- JWT token is present in the `Authorization` header in the format: `Authorization: Bearer JWT_GOES_HERE`
+- JWT token is valid
+- JWT token is not expired
+- JWT token is signed with the correct key (`JWT_SECRET` ENV var) using the correct signature method (HMAC-SHA by default)
+
+The middleware will also create a SHA-256 hash of the `session-data` value from the JWT payload, which usually contains an email address. This hash is stored with all Zip requests and is subsequently used for verifying that the user downloading a zip is the same user that created the Zip request in the first place. The salt for this hash is defined in `USER_HASH_SALT` ENV var.
+
+## Diagram
+
+![File Service Diagram](file_service_diagram.png)
+
+## Environment Variables
 
 | Variable                  | Default                           |  Description   | 
 | ------------------------- | --------------------------------- | -------------- |
