@@ -1,0 +1,18 @@
+---
+version: "3.6"
+
+services:
+  file_service_test:
+    build:
+      context: .
+      dockerfile: test.DockerFile
+    depends_on: [localstack]
+    working_dir: /go/src/app
+    env_file:
+      - docker-compose.env
+    volumes:
+      - .:/go/src/app
+  localstack:
+    ports:
+      - 4569
+      - 4572

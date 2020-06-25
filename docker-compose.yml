@@ -15,8 +15,5 @@ services:
       DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
       SERVICES: s3,dynamodb
-    ports:
-      - 4569:4569
-      - 4572:4572
     volumes:
       - "./scripts/localstack:/docker-entrypoint-initaws.d"
