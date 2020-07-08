@@ -3,22 +3,17 @@ package zipper
 import (
 	"archive/zip"
 	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"net/http"
 	"net/url"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"os"
 	"strings"
-)
 
-type ZipperInterface interface {
-	Open(rw http.ResponseWriter)
-	Close() error
-	AddFile(f *storage.File) error
-}
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+)
 
 type Zipper struct {
 	rw http.ResponseWriter

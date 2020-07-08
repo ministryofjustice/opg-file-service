@@ -17,9 +17,15 @@ type Repository interface {
 	Add(entry *storage.Entry) error
 }
 
+type Zipper interface {
+	Open(rw http.ResponseWriter)
+	Close() error
+	AddFile(f *storage.File) error
+}
+
 type ZipHandler struct {
 	repo   Repository
-	zipper zipper.ZipperInterface
+	zipper Zipper
 	logger *log.Logger
 }
 
