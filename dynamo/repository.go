@@ -13,12 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type RepositoryInterface interface {
-	Get(ref string) (*storage.Entry, error)
-	Delete(entry *storage.Entry) error
-	Add(entry *storage.Entry) error
-}
-
 type Repository struct {
 	db     DBClient
 	logger *log.Logger

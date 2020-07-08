@@ -2,19 +2,27 @@ package handlers
 
 import (
 	"errors"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"opg-file-service/dynamo"
 	"opg-file-service/internal"
 	"opg-file-service/middleware"
 	"opg-file-service/session"
+	"opg-file-service/storage"
 	"opg-file-service/zipper"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
+type Repository interface {
+	Get(ref string) (*storage.Entry, error)
+	Delete(entry *storage.Entry) error
+	Add(entry *storage.Entry) error
+}
+
 type ZipHandler struct {
-	repo   dynamo.RepositoryInterface
+	repo   Repository
 	zipper zipper.ZipperInterface
 	logger *log.Logger
 }
