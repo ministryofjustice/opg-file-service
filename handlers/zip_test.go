@@ -53,11 +53,11 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			scenario:     "ref_not_found",
 			ref:          "test",
 			repoGetCalls: 1,
-			repoGetErr:   storage.NotFoundError{Ref: "test"},
+			repoGetErr:   errors.New("could not find entry 'test'"),
 			wantCode:     404,
 			wantInLog: []string{
 				"Zip files for reference: test",
-				storage.NotFoundError{Ref: "test"}.Error(),
+				"could not find entry 'test'",
 			},
 		},
 		{

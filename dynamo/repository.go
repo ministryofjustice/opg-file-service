@@ -2,6 +2,7 @@ package dynamo
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"opg-file-service/session"
 	"opg-file-service/storage"
@@ -10,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
+
+var errNilEntry = errors.New("entry cannot be nil")
 
 type DBClient interface {
 	GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
@@ -36,8 +39,6 @@ func NewRepository(sess session.Session, l *log.Logger, endpoint, table string) 
 }
 
 func (repo *Repository) Get(ref string) (*storage.Entry, error) {
-	notFound := storage.NotFoundError{Ref: ref}
-
 	result, err := repo.db.GetItem(&dynamodb.GetItemInput{
 		TableName: &repo.table,
 		Key: map[string]*dynamodb.AttributeValue{
@@ -48,28 +49,28 @@ func (repo *Repository) Get(ref string) (*storage.Entry, error) {
 	})
 	if err != nil {
 		repo.logger.Println(err.Error())
-		return nil, notFound
+		return nil, fmt.Errorf("could not find entry '%s': %w", ref, err)
 	}
 
-	entry := storage.Entry{}
+	entry := &storage.Entry{}
 
-	err = dynamodbattribute.UnmarshalMap(result.Item, &entry)
+	err = dynamodbattribute.UnmarshalMap(result.Item, entry)
 	if err != nil {
 		repo.logger.Println("Failed to unmarshal Record, ", err)
-		return nil, notFound
+		return nil, fmt.Errorf("could not find entry '%s': %w", ref, err)
 	}
 
 	if entry.Ref == "" {
 		repo.logger.Println("Ref token " + ref + " has expired or does not exist.")
-		return nil, notFound
+		return nil, fmt.Errorf("could not find entry '%s'", ref)
 	}
 
-	return &entry, nil
+	return entry, nil
 }
 
 func (repo *Repository) Delete(entry *storage.Entry) error {
 	if entry == nil {
-		return errors.New("entry cannot be nil")
+		return errNilEntry
 	}
 
 	input := &dynamodb.DeleteItemInput{
@@ -82,13 +83,12 @@ func (repo *Repository) Delete(entry *storage.Entry) error {
 	}
 
 	_, err := repo.db.DeleteItem(input)
-
 	return err
 }
 
 func (repo *Repository) Add(entry *storage.Entry) error {
 	if entry == nil {
-		return errors.New("entry cannot be nil")
+		return errNilEntry
 	}
 
 	av, err := dynamodbattribute.MarshalMap(entry)
@@ -102,9 +102,5 @@ func (repo *Repository) Add(entry *storage.Entry) error {
 	}
 
 	_, err = repo.db.PutItem(input)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

@@ -86,14 +86,14 @@ func TestRepository_Get(t *testing.T) {
 			scenario:  "error_from_db",
 			ref:       "test",
 			dbErr:     errors.New("some DB error"),
-			wantErr:   storage.NotFoundError{Ref: "test"},
+			wantErr:   errors.New("could not find entry 'test': some DB error"),
 			wantInLog: "some DB error",
 		},
 		{
 			scenario:  "entry_not_found",
 			ref:       "test",
 			dbOut:     new(dynamodb.GetItemOutput),
-			wantErr:   storage.NotFoundError{Ref: "test"},
+			wantErr:   errors.New("could not find entry 'test'"),
 			wantInLog: "Ref token test has expired or does not exist",
 		},
 	}
@@ -124,7 +124,11 @@ func TestRepository_Get(t *testing.T) {
 
 			entry, err := repo.Get(test.ref)
 
-			assert.Equal(t, test.wantErr, err)
+			if test.wantErr != nil {
+				assert.Equal(t, test.wantErr.Error(), err.Error())
+			} else {
+				assert.Nil(t, err)
+			}
 			assert.Equal(t, test.wantOut, entry)
 			assert.Contains(t, buf.String(), test.wantInLog)
 		})
