@@ -2,14 +2,15 @@ package dynamo
 
 import (
 	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"log"
 	"opg-file-service/internal"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"os"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 type RepositoryInterface interface {
@@ -37,7 +38,7 @@ func NewRepository(sess session.Session, l *log.Logger) *Repository {
 	}
 }
 
-func (repo Repository) Get(ref string) (*storage.Entry, error) {
+func (repo *Repository) Get(ref string) (*storage.Entry, error) {
 	notFound := storage.NotFoundError{Ref: ref}
 
 	result, err := repo.db.GetItem(&dynamodb.GetItemInput{
@@ -69,7 +70,7 @@ func (repo Repository) Get(ref string) (*storage.Entry, error) {
 	return &entry, nil
 }
 
-func (repo Repository) Delete(entry *storage.Entry) error {
+func (repo *Repository) Delete(entry *storage.Entry) error {
 	if entry == nil {
 		return errors.New("entry cannot be nil")
 	}
@@ -88,7 +89,7 @@ func (repo Repository) Delete(entry *storage.Entry) error {
 	return err
 }
 
-func (repo Repository) Add(entry *storage.Entry) error {
+func (repo *Repository) Add(entry *storage.Entry) error {
 	if entry == nil {
 		return errors.New("entry cannot be nil")
 	}
