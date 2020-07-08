@@ -31,7 +31,12 @@ func newServer(logger *log.Logger) (*http.Server, error) {
 		return nil, errors.New("unable to create a new session")
 	}
 
-	repo := dynamo.NewRepository(*sess, logger)
+	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
+	table := os.Getenv("AWS_DYNAMODB_TABLE_NAME")
+	if table == "" {
+		table = "zip-requests"
+	}
+	repo := dynamo.NewRepository(*sess, logger, endpoint, table)
 
 	zh := handlers.NewZipHandler(logger, zipper.NewZipper(*sess), repo)
 

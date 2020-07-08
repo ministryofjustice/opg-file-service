@@ -6,7 +6,6 @@ import (
 	"log"
 	"opg-file-service/session"
 	"opg-file-service/storage"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,46 +18,33 @@ import (
 func TestNewRepository(t *testing.T) {
 	tests := []struct {
 		scenario     string
-		endpoint     *string
-		table        *string
+		endpoint     string
+		table        string
 		wantEndpoint string
 		wantTable    string
 	}{
 		{
 			scenario:     "default_config",
+			table:        "zip-requests",
 			wantEndpoint: "https://dynamodb.eu-west-1.amazonaws.com",
 			wantTable:    "zip-requests",
 		},
 		{
 			scenario:     "overrides",
-			endpoint:     str("http://localhost"),
-			table:        str("test"),
+			endpoint:     "http://localhost",
+			table:        "test",
 			wantEndpoint: "http://localhost",
 			wantTable:    "test",
 		},
 	}
 
-	region := os.Getenv("AWS_REGION")
-	if region == "" {
-		region = "eu-west-1"
-	}
-
 	for _, test := range tests {
 		t.Run(test.scenario, func(t *testing.T) {
-			sess, _ := session.NewSession(region, os.Getenv("AWS_IAM_ROLE"))
+			sess, _ := session.NewSession("eu-west-1", "")
 			var buf bytes.Buffer
 			l := log.New(&buf, "test", log.LstdFlags)
 
-			os.Unsetenv("AWS_DYNAMODB_ENDPOINT")
-			os.Unsetenv("AWS_DYNAMODB_TABLE_NAME")
-			if test.endpoint != nil {
-				os.Setenv("AWS_DYNAMODB_ENDPOINT", *test.endpoint)
-			}
-			if test.table != nil {
-				os.Setenv("AWS_DYNAMODB_TABLE_NAME", *test.table)
-			}
-
-			repo := NewRepository(*sess, l)
+			repo := NewRepository(*sess, l, test.endpoint, test.table)
 
 			assert.Equal(t, test.wantTable, repo.table)
 			assert.Equal(t, l, repo.logger)

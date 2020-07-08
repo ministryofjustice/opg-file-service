@@ -3,10 +3,8 @@ package dynamo
 import (
 	"errors"
 	"log"
-	"opg-file-service/internal"
 	"opg-file-service/session"
 	"opg-file-service/storage"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -25,8 +23,7 @@ type Repository struct {
 	table  string
 }
 
-func NewRepository(sess session.Session, l *log.Logger) *Repository {
-	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
+func NewRepository(sess session.Session, l *log.Logger, endpoint, table string) *Repository {
 	sess.AwsSession.Config.Endpoint = &endpoint
 
 	dynamo := dynamodb.New(sess.AwsSession)
@@ -34,7 +31,7 @@ func NewRepository(sess session.Session, l *log.Logger) *Repository {
 	return &Repository{
 		db:     dynamo,
 		logger: l,
-		table:  internal.GetEnvVar("AWS_DYNAMODB_TABLE_NAME", "zip-requests"),
+		table:  table,
 	}
 }
 

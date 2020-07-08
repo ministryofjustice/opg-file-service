@@ -34,6 +34,11 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 	if region == "" {
 		region = "eu-west-1"
 	}
+	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
+	table := os.Getenv("AWS_DYNAMODB_TABLE_NAME")
+	if table == "" {
+		table = "zip-requests"
+	}
 
 	suite.sess, _ = session.NewSession(region, os.Getenv("AWS_IAM_ROLE"))
 	suite.bucket = aws.String("files")
@@ -42,7 +47,7 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 	s3sess.Config.S3ForcePathStyle = aws.Bool(true)
 	suite.s3 = s3.New(&s3sess)
 	suite.s3uploader = s3manager.NewUploader(&s3sess)
-	suite.repo = dynamo.NewRepository(*suite.sess, new(log.Logger))
+	suite.repo = dynamo.NewRepository(*suite.sess, new(log.Logger), endpoint, table)
 
 	// create an S3 bucket
 	suite.s3.CreateBucket(&s3.CreateBucketInput{
