@@ -13,7 +13,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type HashedEmail struct{}
+type hashedEmail struct{}
 
 func JwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -49,7 +49,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			he := hashEmail(e)
 			log.Println("JWT Token is valid for user ", he)
 
-			ctx := context.WithValue(r.Context(), HashedEmail{}, he)
+			ctx := context.WithValue(r.Context(), hashedEmail{}, he)
 			next.ServeHTTP(rw, r.WithContext(ctx))
 		}
 	})

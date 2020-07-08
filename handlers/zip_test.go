@@ -254,7 +254,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 		}
 
 		rr := httptest.NewRecorder()
-		ctx := context.WithValue(req.Context(), HashedEmail{}, test.userHash)
+		ctx := context.WithValue(req.Context(), hashedEmail{}, test.userHash)
 
 		mr.On("Get", test.ref).Return(test.repoGetOut, test.repoGetErr).Times(test.repoGetCalls)
 		mr.On("Delete", test.repoGetOut).Return(test.repoDelErr).Times(test.repoDelCalls)

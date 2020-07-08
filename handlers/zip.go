@@ -54,7 +54,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userHash := r.Context().Value(HashedEmail{})
+	userHash := r.Context().Value(hashedEmail{})
 	if entry.Hash != userHash {
 		zh.logger.Println("Access denied for user:", userHash)
 		writeJSONError(rw, "auth", "Access denied.", http.StatusForbidden)
