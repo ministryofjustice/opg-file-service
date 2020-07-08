@@ -29,6 +29,14 @@ End-to-end tests are executed as part of the `make test` command.
 
 Generally they sit in `main_test.go`. The test suite will start up the file service in a go-routine to run tests against it, and therefore all ENV variables required for configuring the service have to be set prior to running the test suite. This is all automated with the `make test` command. 
 
+## Swagger docs
+
+Run `make docs` or `make swagger` to view swagger docs at http://localhost:8383/
+
+#### Updating swagger docs
+
+The file service uses [Go Swagger](https://goswagger.io/) to generate the ./swagger.yml file from annotations in the code itself. See ./main.go for examples. [Go Swagger](https://goswagger.io/) is based on [Swagger 2.0](https://swagger.io/docs/specification/2-0/basic-structure/). Be careful not to confuse it with OpenAPI v3.
+
 ## Endpoints
 
 - `GET /health-check` - returns a 200 status code if the file service is running
