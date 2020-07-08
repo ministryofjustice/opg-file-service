@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
+	"io"
 	"net/http/httptest"
 	"opg-file-service/session"
 	"opg-file-service/storage"
@@ -51,7 +52,7 @@ func TestZipper_Close(t *testing.T) {
 }
 
 func TestZipper_AddFile(t *testing.T) {
-	tests := []struct {
+	tests := map[string]struct {
 		s3path            string
 		createHeaderError error
 		downloadError     error
@@ -59,87 +60,92 @@ func TestZipper_AddFile(t *testing.T) {
 		expectedS3Key     string
 		expectedError     error
 	}{
-		{
-			"",
-			nil,
-			nil,
-			"",
-			"",
-			errors.New("missing S3 path"),
+		"missing_path": {
+			expectedError: errors.New("missing S3 path"),
 		},
-		{
-			"http://some/path",
-			nil,
-			nil,
-			"",
-			"",
-			errors.New("invalid S3 path: http://some/path"),
+		"invalid_scheme": {
+			s3path:        "http://some/path",
+			expectedError: errors.New("invalid S3 path: http://some/path"),
 		},
-		{
-			"s3://file",
-			nil,
-			nil,
-			"",
-			"",
-			errors.New("invalid S3 path: s3://file"),
+		"invalid_path": {
+			s3path:        "s3://file",
+			expectedError: errors.New("invalid S3 path: s3://file"),
 		},
-		{
-			"s3://bucket/file",
-			nil,
-			nil,
-			"bucket",
-			"file",
-			nil,
+		"correct": {
+			s3path:           "s3://bucket/file",
+			expectedS3Bucket: "bucket",
+			expectedS3Key:    "file",
 		},
-		{
-			"s3://bucket/file",
-			errors.New("some problem with zip header"),
-			nil,
-			"bucket",
-			"file",
-			errors.New("some problem with zip header"),
+		"error_with_zip_header": {
+			s3path:            "s3://bucket/file",
+			createHeaderError: errors.New("some problem with zip header"),
+			expectedS3Bucket:  "bucket",
+			expectedS3Key:     "file",
+			expectedError:     errors.New("some problem with zip header"),
 		},
-		{
-			"s3://bucket/file",
-			nil,
-			errors.New("some problem downloading from S3"),
-			"bucket",
-			"file",
-			errors.New("some problem downloading from S3"),
+		"error_downloading": {
+			s3path:           "s3://bucket/file",
+			downloadError:    errors.New("some problem downloading from S3"),
+			expectedS3Bucket: "bucket",
+			expectedS3Key:    "file",
+			expectedError:    errors.New("some problem downloading from S3"),
 		},
-		{
-			":file",
-			nil,
-			nil,
-			"bucket",
-			"file",
-			errors.New("unable to parse S3 path: :file"),
+		"error_parsing_path": {
+			s3path:           ":file",
+			expectedS3Bucket: "bucket",
+			expectedS3Key:    "file",
+			expectedError:    errors.New("unable to parse S3 path: :file"),
 		},
 	}
 
-	for _, test := range tests {
-		mz := new(MockZipWriter)
-		md := new(MockDownloader)
-		rr := httptest.NewRecorder()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mz := new(MockZipWriter)
+			md := new(MockDownloader)
+			rr := httptest.NewRecorder()
 
-		z := Zipper{rr, mz, md}
-		f := storage.File{
-			S3path:   test.s3path,
-			FileName: "file",
-			Folder:   "folder",
-		}
+			z := Zipper{rr, mz, md}
+			f := storage.File{
+				S3path:   test.s3path,
+				FileName: "file",
+				Folder:   "folder",
+			}
 
-		buf := new(bytes.Buffer)
-		mz.On("CreateHeader", mock.AnythingOfType("*zip.FileHeader")).Return(buf, test.createHeaderError)
+			buf := new(bytes.Buffer)
+			mz.On("CreateHeader", mock.AnythingOfType("*zip.FileHeader")).Return(buf, test.createHeaderError)
 
-		s3input := s3.GetObjectInput{
-			Bucket: aws.String(test.expectedS3Bucket),
-			Key:    aws.String(test.expectedS3Key),
-		}
-		var options []func(*s3manager.Downloader)
-		md.On("Download", FakeWriterAt{buf}, &s3input, options).Return(int64(0), test.downloadError)
+			s3input := s3.GetObjectInput{
+				Bucket: aws.String(test.expectedS3Bucket),
+				Key:    aws.String(test.expectedS3Key),
+			}
+			var options []func(*s3manager.Downloader)
+			md.On("Download", FakeWriterAt{buf}, &s3input, options).Return(int64(0), test.downloadError)
 
-		err := z.AddFile(&f)
-		assert.Equal(t, test.expectedError, err)
+			err := z.AddFile(&f)
+			assert.Equal(t, test.expectedError, err)
+		})
 	}
+}
+
+type MockDownloader struct {
+	mock.Mock
+}
+
+func (m *MockDownloader) Download(w io.WriterAt, input *s3.GetObjectInput, options ...func(*s3manager.Downloader)) (n int64, err error) {
+	args := m.Called(w, input, options)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+type MockZipWriter struct {
+	mock.Mock
+}
+
+func (m *MockZipWriter) Close() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m *MockZipWriter) CreateHeader(fh *zip.FileHeader) (io.Writer, error) {
+	args := m.Called(fh)
+	return args.Get(0).(io.Writer), args.Error(1)
 }
