@@ -23,6 +23,5 @@ services:
       SWAGGER_JSON: /tmp/swagger.yaml
     volumes:
       - ./swagger.yaml:/tmp/swagger.yaml
-      - ./swagger-manual.yaml:/tmp/swagger-manual.yaml
     ports:
       - 8080:8080

@@ -2,10 +2,7 @@ basePath: /
 consumes:
 - application/json
 info:
-  description: |-
-    Documentation for Zip API
-
-    swagger: "2.0"
+  description: Documentation for creating a file request and downloading files using the API
   title: File service API
   version: 1.0.0
 paths:
@@ -29,11 +26,22 @@ paths:
         in: path
         name: reference
         required: true
+      produces:
+      - application/zip
+      - application/json
       responses:
         "200":
           description: Zip file download
+        "401":
+          description: Missing JWT token
+        "403":
+          description: Access denied
         "404":
-          description: Zip file download
+          description: File download request for ref not found
+        "500":
+          description: Unexpected error occurred
+      security:
+      - Bearer: []
       tags:
       - zip
   /zip/request:
@@ -41,11 +49,7 @@ paths:
       description: Makes a request for a set of files to be downloaded from S3
       operationId: request
       parameters:
-      - description: Unique reference for the zip file download request
-        in: body
-        name: ref
-        required: true
-      - description: reference of the zip file request
+      - description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
         in: body
         name: files
         required: true
@@ -54,25 +58,39 @@ paths:
             properties:
               filename:
                 type: string
+              folder:
+                type: string
               s3path:
                 type: string
             type: object
           type: array
-      - description: JWT token
-        in: body
-        name: hash
-        required: true
-      - description: Time before the request expires
-        in: body
-        name: ttl
-        required: true
       responses:
         "200":
           description: Zip file download
+          schema:
+            properties:
+              link:
+                description: Link to download the zip file
+                type: string
+            type: object
+        "401":
+          description: Missing JWT token
+        "403":
+          description: Access denied
+        "500":
+          description: Unexpected error occurred
+      security:
+      - Bearer: []
       tags:
       - zip
 produces:
 - application/json
 schemes:
 - http
+- https
+securityDefinitions:
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

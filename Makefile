@@ -9,4 +9,11 @@ go-test:
 	gotestsum --format short-verbose -- -coverprofile=../cover.out ./...
 
 swagger-generate: # Ideally wanted to use this, but it is very very flaky
-    GO111MODULE=off swagger generate spec -o ./swagger.yaml --scan-models
+	GO111MODULE=off swagger generate spec -o ./swagger.yaml --scan-models
+
+swagger:
+	docker-compose --project-name file-service-docs \
+    -f docker-compose.yml up -d --force-recreate swagger
+
+docs: # Alias for make swagger
+	make swagger
