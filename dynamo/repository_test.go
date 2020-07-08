@@ -38,9 +38,14 @@ func TestNewRepository(t *testing.T) {
 		},
 	}
 
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = "eu-west-1"
+	}
+
 	for _, test := range tests {
 		t.Run(test.scenario, func(t *testing.T) {
-			sess, _ := session.NewSession()
+			sess, _ := session.NewSession(region, os.Getenv("AWS_IAM_ROLE"))
 			var buf bytes.Buffer
 			l := log.New(&buf, "test", log.LstdFlags)
 

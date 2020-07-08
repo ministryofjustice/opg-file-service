@@ -2,10 +2,6 @@ package main
 
 import (
 	"archive/zip"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +12,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/stretchr/testify/suite"
 )
 
 type EndToEndTestSuite struct {
@@ -29,7 +30,12 @@ type EndToEndTestSuite struct {
 }
 
 func (suite *EndToEndTestSuite) SetupSuite() {
-	suite.sess, _ = session.NewSession()
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = "eu-west-1"
+	}
+
+	suite.sess, _ = session.NewSession(region, os.Getenv("AWS_IAM_ROLE"))
 	suite.bucket = aws.String("files")
 	s3sess := *suite.sess.AwsSession
 	s3sess.Config.Endpoint = aws.String(os.Getenv("AWS_S3_ENDPOINT"))

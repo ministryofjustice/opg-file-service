@@ -4,19 +4,20 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
+	"net/http/httptest"
+	"opg-file-service/session"
+	"opg-file-service/storage"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"net/http/httptest"
-	"opg-file-service/session"
-	"opg-file-service/storage"
-	"testing"
 )
 
 func TestNewZipper(t *testing.T) {
-	sess, _ := session.NewSession()
+	sess, _ := session.NewSession("test", "test")
 	z := NewZipper(*sess)
 	assert.Nil(t, z.rw)
 	assert.Nil(t, z.zw)

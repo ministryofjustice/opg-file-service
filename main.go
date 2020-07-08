@@ -18,7 +18,14 @@ import (
 )
 
 func newServer(logger *log.Logger) (*http.Server, error) {
-	sess, err := session.NewSession()
+	awsRegion := os.Getenv("AWS_REGION")
+	if awsRegion == "" {
+		awsRegion = "eu-west-1" // default region
+	}
+
+	awsRole := os.Getenv("AWS_IAM_ROLE")
+
+	sess, err := session.NewSession(awsRegion, awsRole)
 	if err != nil {
 		logger.Println(err.Error())
 		return nil, errors.New("unable to create a new session")
