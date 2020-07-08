@@ -1,0 +1,78 @@
+basePath: /
+consumes:
+- application/json
+info:
+  description: |-
+    Documentation for Zip API
+
+    swagger: "2.0"
+  title: File service API
+  version: 1.0.0
+paths:
+  /health-check:
+    get:
+      description: Register the health check handler
+      operationId: health-check
+      responses:
+        "200":
+          description: Checks to see if file service is up and running
+        "404":
+          description: Not found
+      tags:
+      - check
+  /zip/{reference}:
+    get:
+      description: Download Zip file from zip request reference
+      operationId: download
+      parameters:
+      - description: reference of the zip file request
+        in: path
+        name: reference
+        required: true
+      responses:
+        "200":
+          description: Zip file download
+        "404":
+          description: Zip file download
+      tags:
+      - zip
+  /zip/request:
+    post:
+      description: Makes a request for a set of files to be downloaded from S3
+      operationId: request
+      parameters:
+      - description: Unique reference for the zip file download request
+        in: body
+        name: ref
+        required: true
+      - description: reference of the zip file request
+        in: body
+        name: files
+        required: true
+        schema:
+          items:
+            properties:
+              filename:
+                type: string
+              s3path:
+                type: string
+            type: object
+          type: array
+      - description: JWT token
+        in: body
+        name: hash
+        required: true
+      - description: Time before the request expires
+        in: body
+        name: ttl
+        required: true
+      responses:
+        "200":
+          description: Zip file download
+      tags:
+      - zip
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
