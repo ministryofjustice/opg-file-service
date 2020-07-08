@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"opg-file-service/dynamo"
@@ -16,54 +17,50 @@ import (
 	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 
-func main() {
-	healthcheck.Register("http://localhost:8000" + os.Getenv("PATH_PREFIX") + "/health-check")
-
-	// Create a Logger
-	l := log.New(os.Stdout, "opg-file-service ", log.LstdFlags)
-
-	// Create new serveMux
-	sm := mux.NewRouter().PathPrefix(os.Getenv("PATH_PREFIX")).Subrouter()
-
-	// Register the health check handler
-	sm.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
-	// Create a sub-router for protected handlers
-	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.Use(middleware.JwtVerify)
-
-	// create a new AWS session
+func newServer(logger *log.Logger) (*http.Server, error) {
 	sess, err := session.NewSession()
 	if err != nil {
-		l.Println(err.Error())
-		l.Fatal("unable to create a new session")
+		logger.Println(err.Error())
+		return nil, errors.New("unable to create a new session")
 	}
 
-	repo := dynamo.NewRepository(*sess, l)
+	repo := dynamo.NewRepository(*sess, logger)
 
-	// Register protected handlers
-	zh, err := handlers.NewZipHandler(l, sess, repo)
+	zh, err := handlers.NewZipHandler(logger, sess, repo)
 	if err != nil {
-		l.Fatal(err)
+		return nil, err
 	}
-	getRouter.Handle("/zip/{reference}", zh)
 
-	s := &http.Server{
+	router := mux.NewRouter().PathPrefix(os.Getenv("PATH_PREFIX")).Subrouter()
+	router.
+		HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {})
+	router.
+		Handle("/zip/{reference}", middleware.JwtVerify(zh)).
+		Methods(http.MethodGet)
+
+	return &http.Server{
 		Addr:         ":8000",           // configure the bind address
-		Handler:      sm,                // set the default handler
-		ErrorLog:     l,                 // Set the logger for the server
+		Handler:      router,            // set the default handler
+		ErrorLog:     logger,            // Set the logger for the server
 		IdleTimeout:  120 * time.Second, // max time fro connections using TCP Keep-Alive
 		ReadTimeout:  1 * time.Second,   // max time to read request from the client
 		WriteTimeout: 15 * time.Minute,  // max time to write response to the client
+	}, nil
+}
+
+func main() {
+	healthcheck.Register("http://localhost:8000" + os.Getenv("PATH_PREFIX") + "/health-check")
+	logger := log.New(os.Stdout, "opg-file-service ", log.LstdFlags)
+
+	server, err := newServer(logger)
+	if err != nil {
+		logger.Fatal(err)
 	}
 
 	// start the server
 	go func() {
-		err := s.ListenAndServe()
-		if err != nil {
-			l.Fatal(err)
+		if err := server.ListenAndServe(); err != nil {
+			logger.Fatal(err)
 		}
 	}()
 
@@ -72,8 +69,12 @@ func main() {
 	signal.Notify(c, os.Interrupt, os.Kill)
 
 	sig := <-c
-	l.Println("Received terminate, graceful shutdown", sig)
+	logger.Println("Received terminate, graceful shutdown", sig)
 
-	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	s.Shutdown(tc)
+	tc, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(tc); err != nil {
+		logger.Println(err)
+	}
 }
