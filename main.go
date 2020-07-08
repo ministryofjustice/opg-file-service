@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"opg-file-service/dynamo"
 	"opg-file-service/handlers"
-	"opg-file-service/middleware"
 	"opg-file-service/session"
 	"os"
 	"os/signal"
@@ -35,7 +34,7 @@ func newServer(logger *log.Logger) (*http.Server, error) {
 	router.
 		HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {})
 	router.
-		Handle("/zip/{reference}", middleware.JwtVerify(zh)).
+		Handle("/zip/{reference}", handlers.JwtVerify(zh)).
 		Methods(http.MethodGet)
 
 	return &http.Server{

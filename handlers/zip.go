@@ -3,8 +3,6 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"opg-file-service/internal"
-	"opg-file-service/middleware"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"opg-file-service/zipper"
@@ -46,20 +44,20 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	entry, err := zh.repo.Get(reference)
 	if err != nil {
 		zh.logger.Println(err.Error())
-		internal.WriteJSONError(rw, "ref", "Reference token not found.", http.StatusNotFound)
+		writeJSONError(rw, "ref", "Reference token not found.", http.StatusNotFound)
 		return
 	}
 
 	if entry.IsExpired() {
 		zh.logger.Println("Reference token '" + reference + "' has expired.")
-		internal.WriteJSONError(rw, "ref", "Reference token has expired.", http.StatusNotFound)
+		writeJSONError(rw, "ref", "Reference token has expired.", http.StatusNotFound)
 		return
 	}
 
-	userHash := r.Context().Value(middleware.HashedEmail{})
+	userHash := r.Context().Value(HashedEmail{})
 	if entry.Hash != userHash {
 		zh.logger.Println("Access denied for user:", userHash)
-		internal.WriteJSONError(rw, "auth", "Access denied.", http.StatusForbidden)
+		writeJSONError(rw, "auth", "Access denied.", http.StatusForbidden)
 		return
 	}
 
@@ -71,7 +69,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		err := zh.zipper.AddFile(&file)
 		if err != nil {
 			zh.logger.Println(err.Error())
-			internal.WriteJSONError(rw, "zip", "Unable to zip requested file.", http.StatusInternalServerError)
+			writeJSONError(rw, "zip", "Unable to zip requested file.", http.StatusInternalServerError)
 			return
 		}
 	}

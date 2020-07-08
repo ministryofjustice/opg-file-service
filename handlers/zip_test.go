@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"opg-file-service/dynamo"
-	"opg-file-service/middleware"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"opg-file-service/zipper"
@@ -255,7 +254,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 		}
 
 		rr := httptest.NewRecorder()
-		ctx := context.WithValue(req.Context(), middleware.HashedEmail{}, test.userHash)
+		ctx := context.WithValue(req.Context(), HashedEmail{}, test.userHash)
 
 		mr.On("Get", test.ref).Return(test.repoGetOut, test.repoGetErr).Times(test.repoGetCalls)
 		mr.On("Delete", test.repoGetOut).Return(test.repoDelErr).Times(test.repoDelCalls)

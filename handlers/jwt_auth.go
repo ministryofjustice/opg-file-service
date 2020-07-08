@@ -1,15 +1,16 @@
-package middleware
+package handlers
 
 import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"log"
 	"net/http"
 	"opg-file-service/internal"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type HashedEmail struct{}
@@ -23,7 +24,7 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		//If Authorization is empty, return a 401
 		if header == "" {
-			internal.WriteJSONError(rw, "missing_token", "Missing Authentication Token", http.StatusUnauthorized)
+			writeJSONError(rw, "missing_token", "Missing Authentication Token", http.StatusUnauthorized)
 			return
 		}
 
@@ -38,7 +39,7 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		// Return the error
 		if err != nil {
-			internal.WriteJSONError(rw, "error_with_token", err.Error(), http.StatusUnauthorized)
+			writeJSONError(rw, "error_with_token", err.Error(), http.StatusUnauthorized)
 			return
 		}
 
