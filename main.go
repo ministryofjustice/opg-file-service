@@ -17,26 +17,56 @@ import (
 	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 
-func newServer(logger *log.Logger) (*http.Server, error) {
+type envConfig struct {
+	AWSRegion         string
+	IAMRole           string
+	DynamoDBEndpoint  string
+	DynamoDBTableName string
+	JWTSecret         string
+	UserHashSalt      string
+}
+
+func readEnvConfig() envConfig {
 	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
 		awsRegion = "eu-west-1" // default region
 	}
 
 	awsRole := os.Getenv("AWS_IAM_ROLE")
-
-	sess, err := session.NewSession(awsRegion, awsRole)
-	if err != nil {
-		logger.Println(err.Error())
-		return nil, errors.New("unable to create a new session")
-	}
-
 	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
 	table := os.Getenv("AWS_DYNAMODB_TABLE_NAME")
 	if table == "" {
 		table = "zip-requests"
 	}
-	repo := dynamo.NewRepository(*sess, logger, endpoint, table)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "MyTestSecret"
+	}
+	salt := os.Getenv("USER_HASH_SALT")
+	if salt == "" {
+		salt = "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0"
+	}
+
+	return envConfig{
+		AWSRegion:         awsRegion,
+		IAMRole:           awsRole,
+		DynamoDBEndpoint:  endpoint,
+		DynamoDBTableName: table,
+		JWTSecret:         jwtSecret,
+		UserHashSalt:      salt,
+	}
+}
+
+func newServer(logger *log.Logger) (*http.Server, error) {
+	config := readEnvConfig()
+
+	sess, err := session.NewSession(config.AWSRegion, config.IAMRole)
+	if err != nil {
+		logger.Println(err.Error())
+		return nil, errors.New("unable to create a new session")
+	}
+
+	repo := dynamo.NewRepository(*sess, logger, config.DynamoDBEndpoint, config.DynamoDBTableName)
 
 	zh := handlers.NewZipHandler(logger, zipper.NewZipper(*sess), repo)
 
@@ -44,7 +74,7 @@ func newServer(logger *log.Logger) (*http.Server, error) {
 	router.
 		HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {})
 	router.
-		Handle("/zip/{reference}", handlers.JwtVerify(zh)).
+		Handle("/zip/{reference}", handlers.JwtVerify(config.JWTSecret, config.UserHashSalt, zh)).
 		Methods(http.MethodGet)
 
 	return &http.Server{

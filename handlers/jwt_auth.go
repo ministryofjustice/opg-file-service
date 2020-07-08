@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"opg-file-service/internal"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -15,9 +14,8 @@ import (
 
 type hashedEmail struct{}
 
-func JwtVerify(next http.Handler) http.Handler {
+func JwtVerify(secret, salt string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		jwtSecret := internal.GetEnvVar("JWT_SECRET", "MyTestSecret")
 
 		//Get the token from the header
 		header := r.Header.Get("Authorization")
@@ -34,7 +32,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return []byte(jwtSecret), nil
+			return []byte(secret), nil
 		})
 
 		// Return the error
@@ -46,7 +44,7 @@ func JwtVerify(next http.Handler) http.Handler {
 		if token.Valid {
 			claims := token.Claims.(jwt.MapClaims)
 			e := claims["session-data"].(string)
-			he := hashEmail(e)
+			he := hashEmail(salt, e)
 			log.Println("JWT Token is valid for user ", he)
 
 			ctx := context.WithValue(r.Context(), hashedEmail{}, he)
@@ -56,8 +54,7 @@ func JwtVerify(next http.Handler) http.Handler {
 }
 
 // Create a hash of the users email
-func hashEmail(e string) string {
-	salt := internal.GetEnvVar("USER_HASH_SALT", "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0")
+func hashEmail(salt, e string) string {
 	h := sha256.New()
 	h.Write([]byte(salt + e))
 	return hex.EncodeToString(h.Sum(nil))
