@@ -4,22 +4,25 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"opg-file-service/dynamo"
 	"opg-file-service/middleware"
+	"opg-file-service/session"
 	"opg-file-service/storage"
 	"opg-file-service/zipper"
 	"testing"
+
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewZipHandler(t *testing.T) {
 	l := new(log.Logger)
-	zh, err := NewZipHandler(l)
+	s, _ := session.NewSession()
+	zh, err := NewZipHandler(l, s, &dynamo.Repository{})
 	assert.Nil(t, err)
 	assert.IsType(t, ZipHandler{}, *zh)
 	assert.Equal(t, l, zh.logger)

@@ -2,15 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 	"log"
 	"net/http"
+	"opg-file-service/dynamo"
 	"opg-file-service/handlers"
 	"opg-file-service/middleware"
+	"opg-file-service/session"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 
 func main() {
@@ -31,8 +34,17 @@ func main() {
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.Use(middleware.JwtVerify)
 
+	// create a new AWS session
+	sess, err := session.NewSession()
+	if err != nil {
+		l.Println(err.Error())
+		l.Fatal("unable to create a new session")
+	}
+
+	repo := dynamo.NewRepository(*sess, l)
+
 	// Register protected handlers
-	zh, err := handlers.NewZipHandler(l)
+	zh, err := handlers.NewZipHandler(l, sess, repo)
 	if err != nil {
 		l.Fatal(err)
 	}

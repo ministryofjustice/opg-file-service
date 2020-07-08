@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"errors"
 	"log"
 	"net/http"
-	"opg-file-service/dynamo"
 	"opg-file-service/internal"
 	"opg-file-service/middleware"
 	"opg-file-service/session"
@@ -27,18 +25,11 @@ type ZipHandler struct {
 	logger *log.Logger
 }
 
-func NewZipHandler(logger *log.Logger) (*ZipHandler, error) {
-	// create a new AWS session
-	sess, err := session.NewSession()
-	if err != nil {
-		logger.Println(err.Error())
-		return nil, errors.New("unable to create a new session")
-	}
-
+func NewZipHandler(logger *log.Logger, sess *session.Session, repo Repository) (*ZipHandler, error) {
 	return &ZipHandler{
-		dynamo.NewRepository(*sess, logger),
-		zipper.NewZipper(*sess),
-		logger,
+		repo:   repo,
+		zipper: zipper.NewZipper(*sess),
+		logger: logger,
 	}, nil
 }
 
