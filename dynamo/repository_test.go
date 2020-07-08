@@ -3,20 +3,18 @@ package dynamo
 import (
 	"bytes"
 	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"os"
 	"testing"
-)
 
-func str(s string) *string {
-	return &s
-}
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
 
 func TestNewRepository(t *testing.T) {
 	tests := []struct {
@@ -27,77 +25,42 @@ func TestNewRepository(t *testing.T) {
 		wantTable    string
 	}{
 		{
-			"New Repository with default config",
-			nil,
-			nil,
-			"https://dynamodb.eu-west-1.amazonaws.com",
-			"zip-requests",
+			scenario:     "default_config",
+			wantEndpoint: "https://dynamodb.eu-west-1.amazonaws.com",
+			wantTable:    "zip-requests",
 		},
 		{
-			"New Repository with config overrides",
-			str("http://localhost"),
-			str("test"),
-			"http://localhost",
-			"test",
+			scenario:     "overrides",
+			endpoint:     str("http://localhost"),
+			table:        str("test"),
+			wantEndpoint: "http://localhost",
+			wantTable:    "test",
 		},
 	}
 
 	for _, test := range tests {
-		sess, _ := session.NewSession()
-		buf := new(bytes.Buffer)
-		l := log.New(buf, "test", log.LstdFlags)
+		t.Run(test.scenario, func(t *testing.T) {
+			sess, _ := session.NewSession()
+			var buf bytes.Buffer
+			l := log.New(&buf, "test", log.LstdFlags)
 
-		os.Unsetenv("AWS_DYNAMODB_ENDPOINT")
-		os.Unsetenv("AWS_DYNAMODB_TABLE_NAME")
-		if test.endpoint != nil {
-			os.Setenv("AWS_DYNAMODB_ENDPOINT", *test.endpoint)
-		}
-		if test.table != nil {
-			os.Setenv("AWS_DYNAMODB_TABLE_NAME", *test.table)
-		}
+			os.Unsetenv("AWS_DYNAMODB_ENDPOINT")
+			os.Unsetenv("AWS_DYNAMODB_TABLE_NAME")
+			if test.endpoint != nil {
+				os.Setenv("AWS_DYNAMODB_ENDPOINT", *test.endpoint)
+			}
+			if test.table != nil {
+				os.Setenv("AWS_DYNAMODB_TABLE_NAME", *test.table)
+			}
 
-		repo := NewRepository(*sess, l)
+			repo := NewRepository(*sess, l)
 
-		assert.Equal(t, test.wantTable, repo.table, test.scenario)
-		assert.Equal(t, l, repo.logger, test.scenario)
-		assert.IsType(t, new(dynamodb.DynamoDB), repo.db, test.scenario)
-		db := repo.db.(*dynamodb.DynamoDB)
-		assert.Equal(t, test.wantEndpoint, db.Endpoint, test.scenario)
-	}
-}
-
-func newValidGetItemOutput(ref string) *dynamodb.GetItemOutput {
-	item := map[string]*dynamodb.AttributeValue{
-		"Files": {
-			L: []*dynamodb.AttributeValue{
-				{
-					M: map[string]*dynamodb.AttributeValue{
-						"S3Path": {
-							S: aws.String("s3://files/file.test"),
-						},
-						"FileName": {
-							S: aws.String("file.test"),
-						},
-						"Folder": {
-							S: aws.String("folder"),
-						},
-					},
-				},
-			},
-		},
-		"Hash": {
-			S: aws.String("testHash"),
-		},
-		"Ref": {
-			S: &ref,
-		},
-		"Ttl": {
-			N: aws.String("0"),
-		},
-	}
-
-	return &dynamodb.GetItemOutput{
-		Item: item,
+			assert.Equal(t, test.wantTable, repo.table)
+			assert.Equal(t, l, repo.logger)
+			assert.IsType(t, new(dynamodb.DynamoDB), repo.db)
+			db := repo.db.(*dynamodb.DynamoDB)
+			assert.Equal(t, test.wantEndpoint, db.Endpoint)
+		})
 	}
 }
 
@@ -112,11 +75,10 @@ func TestRepository_Get(t *testing.T) {
 		wantInLog string
 	}{
 		{
-			"Successfully retrieve and un-marshall data from DB.",
-			"test",
-			newValidGetItemOutput("test"),
-			nil,
-			&storage.Entry{
+			scenario: "success",
+			ref:      "test",
+			dbOut:    newValidGetItemOutput("test"),
+			wantOut: &storage.Entry{
 				Ref:  "test",
 				Hash: "testHash",
 				Ttl:  0,
@@ -128,56 +90,53 @@ func TestRepository_Get(t *testing.T) {
 					},
 				},
 			},
-			nil,
-			"",
 		},
 		{
-			"Error from DB client when retrieving item.",
-			"test",
-			nil,
-			errors.New("some DB error"),
-			nil,
-			storage.NotFoundError{Ref: "test"},
-			"some DB error",
+			scenario:  "error_from_db",
+			ref:       "test",
+			dbErr:     errors.New("some DB error"),
+			wantErr:   storage.NotFoundError{Ref: "test"},
+			wantInLog: "some DB error",
 		},
 		{
-			"Entry not found.",
-			"test",
-			new(dynamodb.GetItemOutput),
-			nil,
-			nil,
-			storage.NotFoundError{Ref: "test"},
-			"Ref token test has expired or does not exist",
+			scenario:  "entry_not_found",
+			ref:       "test",
+			dbOut:     new(dynamodb.GetItemOutput),
+			wantErr:   storage.NotFoundError{Ref: "test"},
+			wantInLog: "Ref token test has expired or does not exist",
 		},
 	}
 
 	for _, test := range tests {
-		buf := new(bytes.Buffer)
-		l := log.New(buf, "", log.LstdFlags)
-		mdb := MockDynamoDB{}
+		t.Run(test.scenario, func(t *testing.T) {
+			var buf bytes.Buffer
+			l := log.New(&buf, "", log.LstdFlags)
 
-		repo := Repository{
-			db:     &mdb,
-			logger: l,
-			table:  "table",
-		}
+			mdb := &MockDynamoDB{}
 
-		input := dynamodb.GetItemInput{
-			TableName: &repo.table,
-			Key: map[string]*dynamodb.AttributeValue{
-				"Ref": {
-					S: &test.ref,
+			repo := &Repository{
+				db:     mdb,
+				logger: l,
+				table:  "table",
+			}
+
+			input := dynamodb.GetItemInput{
+				TableName: &repo.table,
+				Key: map[string]*dynamodb.AttributeValue{
+					"Ref": {
+						S: &test.ref,
+					},
 				},
-			},
-		}
+			}
 
-		mdb.On("GetItem", &input).Return(test.dbOut, test.dbErr).Once()
+			mdb.On("GetItem", &input).Return(test.dbOut, test.dbErr).Once()
 
-		entry, err := repo.Get(test.ref)
+			entry, err := repo.Get(test.ref)
 
-		assert.Equal(t, test.wantErr, err, test.scenario)
-		assert.Equal(t, test.wantOut, entry, test.scenario)
-		assert.Contains(t, buf.String(), test.wantInLog, test.scenario)
+			assert.Equal(t, test.wantErr, err)
+			assert.Equal(t, test.wantOut, entry)
+			assert.Contains(t, buf.String(), test.wantInLog)
+		})
 	}
 }
 
@@ -247,19 +206,19 @@ func TestRepository_Add(t *testing.T) {
 		wantErr  error
 	}{
 		{
-			"Entry added successfully",
+			"successfully_add_entry",
 			&storage.Entry{},
 			nil,
 			nil,
 		},
 		{
-			"Error from DB client",
+			"db_client_error",
 			&storage.Entry{},
 			errors.New("some DB error"),
 			errors.New("some DB error"),
 		},
 		{
-			"Nil entry parameter",
+			"nil_entry",
 			nil,
 			nil,
 			errors.New("entry cannot be nil"),
@@ -267,24 +226,85 @@ func TestRepository_Add(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		mdb := MockDynamoDB{}
+		t.Run(test.scenario, func(t *testing.T) {
+			db := &MockDynamoDB{}
 
-		repo := Repository{
-			db:     &mdb,
-			logger: &log.Logger{},
-			table:  "table",
-		}
+			repo := Repository{
+				db:     db,
+				logger: &log.Logger{},
+				table:  "table",
+			}
 
-		av, _ := dynamodbattribute.MarshalMap(test.entry)
-		input := dynamodb.PutItemInput{
-			TableName: &repo.table,
-			Item:      av,
-		}
+			av, _ := dynamodbattribute.MarshalMap(test.entry)
+			input := dynamodb.PutItemInput{
+				TableName: &repo.table,
+				Item:      av,
+			}
 
-		mdb.On("PutItem", &input).Return(new(dynamodb.PutItemOutput), test.dbErr).Once()
+			db.On("PutItem", &input).
+				Return(new(dynamodb.PutItemOutput), test.dbErr).
+				Once()
 
-		err := repo.Add(test.entry)
+			err := repo.Add(test.entry)
+			assert.Equal(t, test.wantErr, err)
+		})
+	}
+}
 
-		assert.Equal(t, test.wantErr, err, test.scenario)
+type MockDynamoDB struct {
+	mock.Mock
+}
+
+func (m *MockDynamoDB) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+	args := m.Called(input)
+	return args.Get(0).(*dynamodb.GetItemOutput), args.Error(1)
+}
+
+func (m *MockDynamoDB) DeleteItem(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
+	args := m.Called(input)
+	return args.Get(0).(*dynamodb.DeleteItemOutput), args.Error(1)
+}
+
+func (m *MockDynamoDB) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
+	args := m.Called(input)
+	return args.Get(0).(*dynamodb.PutItemOutput), args.Error(1)
+}
+
+func str(s string) *string {
+	return &s
+}
+
+func newValidGetItemOutput(ref string) *dynamodb.GetItemOutput {
+	item := map[string]*dynamodb.AttributeValue{
+		"Files": {
+			L: []*dynamodb.AttributeValue{
+				{
+					M: map[string]*dynamodb.AttributeValue{
+						"S3Path": {
+							S: aws.String("s3://files/file.test"),
+						},
+						"FileName": {
+							S: aws.String("file.test"),
+						},
+						"Folder": {
+							S: aws.String("folder"),
+						},
+					},
+				},
+			},
+		},
+		"Hash": {
+			S: aws.String("testHash"),
+		},
+		"Ref": {
+			S: &ref,
+		},
+		"Ttl": {
+			N: aws.String("0"),
+		},
+	}
+
+	return &dynamodb.GetItemOutput{
+		Item: item,
 	}
 }
