@@ -22,6 +22,7 @@ type envConfig struct {
 	IAMRole           string
 	DynamoDBEndpoint  string
 	DynamoDBTableName string
+	S3Endpoint        string
 	JWTSecret         string
 	UserHashSalt      string
 }
@@ -29,19 +30,19 @@ type envConfig struct {
 func readEnvConfig() envConfig {
 	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
-		awsRegion = "eu-west-1" // default region
+		awsRegion = "eu-west-1"
 	}
 
-	awsRole := os.Getenv("AWS_IAM_ROLE")
-	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
 	table := os.Getenv("AWS_DYNAMODB_TABLE_NAME")
 	if table == "" {
 		table = "zip-requests"
 	}
+
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "MyTestSecret"
 	}
+
 	salt := os.Getenv("USER_HASH_SALT")
 	if salt == "" {
 		salt = "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0"
@@ -49,9 +50,10 @@ func readEnvConfig() envConfig {
 
 	return envConfig{
 		AWSRegion:         awsRegion,
-		IAMRole:           awsRole,
-		DynamoDBEndpoint:  endpoint,
+		IAMRole:           os.Getenv("AWS_IAM_ROLE"),
+		DynamoDBEndpoint:  os.Getenv("AWS_DYNAMODB_ENDPOINT"),
 		DynamoDBTableName: table,
+		S3Endpoint:        os.Getenv("AWS_S3_ENDPOINT"),
 		JWTSecret:         jwtSecret,
 		UserHashSalt:      salt,
 	}
@@ -68,7 +70,7 @@ func newServer(logger *log.Logger) (*http.Server, error) {
 
 	repo := dynamo.NewRepository(*sess, logger, config.DynamoDBEndpoint, config.DynamoDBTableName)
 
-	zh := handlers.NewZipHandler(logger, zipper.NewZipper(*sess), repo)
+	zh := handlers.NewZipHandler(logger, zipper.NewZipper(*sess, config.S3Endpoint), repo)
 
 	router := mux.NewRouter().PathPrefix(os.Getenv("PATH_PREFIX")).Subrouter()
 	router.

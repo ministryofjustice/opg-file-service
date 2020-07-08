@@ -18,7 +18,7 @@ import (
 
 func TestNewZipper(t *testing.T) {
 	sess, _ := session.NewSession("test", "test")
-	z := NewZipper(*sess)
+	z := NewZipper(*sess, "endpoint")
 	assert.Nil(t, z.rw)
 	assert.Nil(t, z.zw)
 	assert.NotNil(t, z.s3)

@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"opg-file-service/session"
 	"opg-file-service/storage"
-	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -21,8 +20,7 @@ type Zipper struct {
 	s3 Downloader
 }
 
-func NewZipper(sess session.Session) *Zipper {
-	endpoint := os.Getenv("AWS_S3_ENDPOINT")
+func NewZipper(sess session.Session, endpoint string) *Zipper {
 	sess.AwsSession.Config.Endpoint = &endpoint
 	sess.AwsSession.Config.S3ForcePathStyle = aws.Bool(true)
 
