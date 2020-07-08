@@ -3,9 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"opg-file-service/session"
 	"opg-file-service/storage"
-	"opg-file-service/zipper"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -29,12 +27,12 @@ type ZipHandler struct {
 	logger *log.Logger
 }
 
-func NewZipHandler(logger *log.Logger, sess *session.Session, repo Repository) (*ZipHandler, error) {
+func NewZipHandler(logger *log.Logger, zipper Zipper, repo Repository) *ZipHandler {
 	return &ZipHandler{
 		repo:   repo,
-		zipper: zipper.NewZipper(*sess),
+		zipper: zipper,
 		logger: logger,
-	}, nil
+	}
 }
 
 func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {

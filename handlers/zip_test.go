@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"opg-file-service/dynamo"
-	"opg-file-service/session"
 	"opg-file-service/storage"
 	"opg-file-service/zipper"
 	"testing"
@@ -20,9 +19,7 @@ import (
 
 func TestNewZipHandler(t *testing.T) {
 	l := new(log.Logger)
-	s, _ := session.NewSession()
-	zh, err := NewZipHandler(l, s, &dynamo.Repository{})
-	assert.Nil(t, err)
+	zh := NewZipHandler(l, &zipper.Zipper{}, &dynamo.Repository{})
 	assert.IsType(t, ZipHandler{}, *zh)
 	assert.Equal(t, l, zh.logger)
 	assert.IsType(t, new(zipper.Zipper), zh.zipper)

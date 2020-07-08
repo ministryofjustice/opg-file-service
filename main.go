@@ -8,6 +8,7 @@ import (
 	"opg-file-service/dynamo"
 	"opg-file-service/handlers"
 	"opg-file-service/session"
+	"opg-file-service/zipper"
 	"os"
 	"os/signal"
 	"time"
@@ -25,10 +26,7 @@ func newServer(logger *log.Logger) (*http.Server, error) {
 
 	repo := dynamo.NewRepository(*sess, logger)
 
-	zh, err := handlers.NewZipHandler(logger, sess, repo)
-	if err != nil {
-		return nil, err
-	}
+	zh := handlers.NewZipHandler(logger, zipper.NewZipper(*sess), repo)
 
 	router := mux.NewRouter().PathPrefix(os.Getenv("PATH_PREFIX")).Subrouter()
 	router.
