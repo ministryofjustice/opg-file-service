@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var safePathRegex = regexp.MustCompile(`[#\[\]<>:"/|?*\\]`)
+
 type File struct {
 	S3path   string
 	FileName string
@@ -28,13 +30,10 @@ func (f *File) GetZipFileHeader() *zip.FileHeader {
 }
 
 func (f *File) GetRelativePath() string {
-	// regex for getting a safe filename and folder
-	regex := regexp.MustCompile(`[#\[\]<>:"/|?*\\]`)
-
 	path := ""
 
 	if f.Folder != "" {
-		folder := regex.ReplaceAllString(f.Folder, "")
+		folder := safePathRegex.ReplaceAllString(f.Folder, "")
 		if folder != "" {
 			path += folder
 			if !strings.HasSuffix(path, "/") {
@@ -43,7 +42,7 @@ func (f *File) GetRelativePath() string {
 		}
 	}
 
-	file := regex.ReplaceAllString(f.FileName, "")
+	file := safePathRegex.ReplaceAllString(f.FileName, "")
 	if file == "" {
 		file = "undefined" // default filename
 	}
