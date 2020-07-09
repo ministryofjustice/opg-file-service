@@ -1,3 +1,23 @@
+// File service API
+//
+// Documentation for creating a file request and downloading files using the API
+//
+//   Schemes: http, https
+//   BasePath: /
+//   Version: 1.0.0
+//   securityDefinitions:
+//     Bearer:
+//       type: apiKey
+//       name: Authorization
+//       in: header
+//
+//   Consumes:
+// 	  - application/json
+//
+//   Produces:
+//    - application/json
+//
+// swagger:meta
 package main
 
 import (
@@ -22,7 +42,14 @@ func main() {
 	// Create new serveMux
 	sm := mux.NewRouter().PathPrefix(os.Getenv("PATH_PREFIX")).Subrouter()
 
+	// swagger:operation GET /health-check check health-check
 	// Register the health check handler
+	// ---
+	// responses:
+	//   '200':
+	//     description: File service is up and running
+	//   '404':
+	//     description: Not found
 	sm.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
@@ -36,7 +63,72 @@ func main() {
 	if err != nil {
 		l.Fatal(err)
 	}
+
+	// swagger:operation GET /zip/{reference} zip download
+	// Download Zip file from zip request reference
+	// ---
+	// produces:
+	//   - application/zip
+	//   - application/json
+	// security:
+	//  - Bearer: []
+	// parameters:
+	// - name: reference
+	//   in: path
+	//   description: reference of the zip file request
+	//   required: true
+	//
+	// responses:
+	//   '200':
+	//     description: Zip file download
+	//   '404':
+	//     description: File download request for ref not found
+	//   '403':
+	//     description: Access denied
+	//   '401':
+	//     description: Missing, invalid or expired JWT token
+	//   '500':
+	//     description: Unexpected error occurred
 	getRouter.Handle("/zip/{reference}", zh)
+
+	// swagger:operation POST /zip/request zip request
+	// Makes a request for a set of files to be downloaded from S3
+	// ---
+	// security:
+	//  - Bearer: []
+	// parameters:
+	// - name: files
+	//   in: body
+	//   description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
+	//   required: true
+	//   schema:
+	//       type: array
+	//       items:
+	//           type: object
+	//           properties:
+	//              s3path:
+	//                  type: string
+	//              filename:
+	//                  type: string
+	//              folder:
+	//                  type: string
+	// responses:
+	//   '200':
+	//     description: Zip file download
+	//     schema:
+	//       type: object
+	//       properties:
+	//         link:
+	//           type: string
+	//           description: Link to download the zip file
+	//   '403':
+	//     description: Access denied
+	//   '401':
+	//     description: Missing, invalid or expired JWT token
+	//   '500':
+	//     description: Unexpected error occurred
+
+	// @todo write code for this endpoint (or generate?)
 
 	s := &http.Server{
 		Addr:         ":8000",           // configure the bind address
