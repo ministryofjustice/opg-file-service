@@ -2,11 +2,11 @@ package zipper
 
 import "io"
 
-type FakeWriterAt struct {
+type sequentialWriterAt struct {
 	w io.Writer
 }
 
-func (fw FakeWriterAt) WriteAt(p []byte, offset int64) (n int, err error) {
+func (fw sequentialWriterAt) WriteAt(p []byte, offset int64) (n int, err error) {
 	// ignore 'offset' because we force sequential downloads
 	return fw.w.Write(p)
 }

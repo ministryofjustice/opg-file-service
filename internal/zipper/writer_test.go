@@ -2,13 +2,14 @@ package zipper
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFakeWriterAt_WriteAt(t *testing.T) {
 	b := new(bytes.Buffer)
-	w := FakeWriterAt{b}
+	w := sequentialWriterAt{b}
 
 	_, err := w.WriteAt([]byte("Hello"), 0)
 	assert.Nil(t, err)

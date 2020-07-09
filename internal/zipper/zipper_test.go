@@ -119,7 +119,7 @@ func TestZipper_AddFile(t *testing.T) {
 				Key:    aws.String(test.expectedS3Key),
 			}
 			var options []func(*s3manager.Downloader)
-			md.On("Download", FakeWriterAt{buf}, &s3input, options).Return(int64(0), test.downloadError)
+			md.On("Download", sequentialWriterAt{buf}, &s3input, options).Return(int64(0), test.downloadError)
 
 			err := z.AddFile(&f)
 			assert.Equal(t, test.expectedError, err)

@@ -74,7 +74,7 @@ func (z *Zipper) AddFile(f *storage.File) error {
 	if err != nil {
 		return err
 	}
-	fw := FakeWriterAt{w} // wrap our io.Writer in a fake io.WriterAt, as S3 requires a io.WriterAt
+	fw := sequentialWriterAt{w} // wrap our io.Writer in a fake io.WriterAt, as S3 requires a io.WriterAt
 
 	input := s3.GetObjectInput{
 		Bucket: aws.String(u.Host),
