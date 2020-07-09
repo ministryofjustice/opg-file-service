@@ -7,12 +7,12 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"opg-file-service/dynamo"
-	"opg-file-service/storage"
-	"opg-file-service/zipper"
 	"testing"
 
 	"github.com/gorilla/mux"
+	"github.com/ministryofjustice/opg-file-service/dynamo"
+	"github.com/ministryofjustice/opg-file-service/storage"
+	"github.com/ministryofjustice/opg-file-service/zipper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -5,15 +5,15 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"opg-file-service/dynamo"
-	"opg-file-service/handlers"
-	"opg-file-service/session"
-	"opg-file-service/zipper"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ministryofjustice/opg-file-service/dynamo"
+	"github.com/ministryofjustice/opg-file-service/handlers"
+	"github.com/ministryofjustice/opg-file-service/session"
+	"github.com/ministryofjustice/opg-file-service/zipper"
 	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 

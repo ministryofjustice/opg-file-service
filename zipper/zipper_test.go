@@ -6,13 +6,13 @@ import (
 	"errors"
 	"io"
 	"net/http/httptest"
-	"opg-file-service/session"
-	"opg-file-service/storage"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/ministryofjustice/opg-file-service/session"
+	"github.com/ministryofjustice/opg-file-service/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -43,22 +43,22 @@ func TestFile_GetRelativePath(t *testing.T) {
 
 func TestFile_GetFileNameAndExtension(t *testing.T) {
 	tests := []struct {
-	    scenario        string
-		filename        string
-		wantFilename    string
-		wantExtension   string
+		scenario      string
+		filename      string
+		wantFilename  string
+		wantExtension string
 	}{
 		{"Filename with one dot", "filename.txt", "filename", "txt"},
-        {"Filename with mutiple dots", "filename.something.txt", "filename.something", "txt"},
-        {"Filename with no file extension", "filename", "filename", ""},
+		{"Filename with mutiple dots", "filename.something.txt", "filename.something", "txt"},
+		{"Filename with no file extension", "filename", "filename", ""},
 	}
 
-    file := File{}
+	file := File{}
 	for _, test := range tests {
 		file.FileName = test.filename
 		filename, extension := file.GetFileNameAndExtension()
 		assert.Equal(t, test.wantFilename, filename, test.scenario)
-        assert.Equal(t, test.wantExtension, extension, test.scenario)
+		assert.Equal(t, test.wantExtension, extension, test.scenario)
 	}
 }
 

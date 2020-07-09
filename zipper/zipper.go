@@ -6,13 +6,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"opg-file-service/session"
-	"opg-file-service/storage"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/ministryofjustice/opg-file-service/session"
+	"github.com/ministryofjustice/opg-file-service/storage"
 )
 
 type Downloader interface {

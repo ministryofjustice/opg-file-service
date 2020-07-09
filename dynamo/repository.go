@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"opg-file-service/session"
-	"opg-file-service/storage"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/ministryofjustice/opg-file-service/session"
+	"github.com/ministryofjustice/opg-file-service/storage"
 )
 
 var errNilEntry = errors.New("entry cannot be nil")

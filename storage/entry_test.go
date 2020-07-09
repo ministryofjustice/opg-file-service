@@ -104,54 +104,54 @@ func TestEntry_Validate(t *testing.T) {
 
 func TestEntry_DeDupe(t *testing.T) {
 	tests := []struct {
-		scenario string
+		scenario    string
 		filesBefore []File
-		filesAfter []File
+		filesAfter  []File
 	}{
 		{
 			"Files with no duplicates",
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file2.csv",Folder: ""},
-				{FileName: "file3.pdf",Folder: ""},
-				{FileName: "file4.xls",Folder: ""},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file2.csv", Folder: ""},
+				{FileName: "file3.pdf", Folder: ""},
+				{FileName: "file4.xls", Folder: ""},
 			},
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file2.csv",Folder: ""},
-				{FileName: "file3.pdf",Folder: ""},
-				{FileName: "file4.xls",Folder: ""},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file2.csv", Folder: ""},
+				{FileName: "file3.pdf", Folder: ""},
+				{FileName: "file4.xls", Folder: ""},
 			},
 		},
 		{
 			"Files with duplicates",
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file2.pdf",Folder: ""},
-				{FileName: "file2.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory/another-directory"},
-				{FileName: "file5",Folder: "some-directory/another-directory/more-directory"},
-				{FileName: "file5",Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file2.pdf", Folder: ""},
+				{FileName: "file2.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory/another-directory"},
+				{FileName: "file5", Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file5", Folder: "some-directory/another-directory/more-directory"},
 			},
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file1 (1).txt",Folder: ""},
-				{FileName: "file2.pdf",Folder: ""},
-				{FileName: "file2.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file3 (1).pdf",Folder: "some-directory"},
-				{FileName: "file3 (2).pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory"},
-				{FileName: "file4 (1).pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory/another-directory"},
-				{FileName: "file5",Folder: "some-directory/another-directory/more-directory"},
-				{FileName: "file5 (1)",Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file1 (1).txt", Folder: ""},
+				{FileName: "file2.pdf", Folder: ""},
+				{FileName: "file2.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file3 (1).pdf", Folder: "some-directory"},
+				{FileName: "file3 (2).pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory"},
+				{FileName: "file4 (1).pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory/another-directory"},
+				{FileName: "file5", Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file5 (1)", Folder: "some-directory/another-directory/more-directory"},
 			},
 		},
 	}

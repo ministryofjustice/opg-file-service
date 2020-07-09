@@ -1,4 +1,4 @@
-module opg-file-service
+module github.com/ministryofjustice/opg-file-service
 
 go 1.14
 
@@ -12,8 +12,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/mod v0.3.0 // indirect
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
 	golang.org/x/sys v0.0.0-20200622214017-ed371f2e16b4 // indirect
-	golang.org/x/tools v0.0.0-20200623045635-ff88973b1e4e // indirect
+	golang.org/x/tools v0.0.0-20200708183856-df98bc6d456c // indirect
 	gotest.tools/gotestsum v0.5.0 // indirect
 )

@@ -5,9 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"opg-file-service/dynamo"
-	"opg-file-service/session"
-	"opg-file-service/storage"
 	"os"
 	"strings"
 	"testing"
@@ -16,6 +13,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/ministryofjustice/opg-file-service/dynamo"
+	"github.com/ministryofjustice/opg-file-service/session"
+	"github.com/ministryofjustice/opg-file-service/storage"
 	"github.com/stretchr/testify/suite"
 )
 

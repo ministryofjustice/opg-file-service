@@ -3,10 +3,10 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"opg-file-service/storage"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ministryofjustice/opg-file-service/storage"
 )
 
 type Repository interface {
