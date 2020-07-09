@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-file-service/dynamo"
-	"github.com/ministryofjustice/opg-file-service/handlers"
-	"github.com/ministryofjustice/opg-file-service/session"
-	"github.com/ministryofjustice/opg-file-service/zipper"
+	"github.com/ministryofjustice/opg-file-service/internal/dynamo"
+	"github.com/ministryofjustice/opg-file-service/internal/handlers"
+	"github.com/ministryofjustice/opg-file-service/internal/session"
+	"github.com/ministryofjustice/opg-file-service/internal/zipper"
 	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 

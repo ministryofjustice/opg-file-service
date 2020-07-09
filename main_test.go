@@ -13,9 +13,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/ministryofjustice/opg-file-service/dynamo"
-	"github.com/ministryofjustice/opg-file-service/session"
-	"github.com/ministryofjustice/opg-file-service/storage"
+	"github.com/ministryofjustice/opg-file-service/internal/dynamo"
+	"github.com/ministryofjustice/opg-file-service/internal/session"
+	"github.com/ministryofjustice/opg-file-service/internal/storage"
 	"github.com/stretchr/testify/suite"
 )
 

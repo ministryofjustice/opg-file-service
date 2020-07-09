@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-file-service/dynamo"
-	"github.com/ministryofjustice/opg-file-service/storage"
-	"github.com/ministryofjustice/opg-file-service/zipper"
+	"github.com/ministryofjustice/opg-file-service/internal/dynamo"
+	"github.com/ministryofjustice/opg-file-service/internal/storage"
+	"github.com/ministryofjustice/opg-file-service/internal/zipper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/ministryofjustice/opg-file-service/session"
-	"github.com/ministryofjustice/opg-file-service/storage"
+	"github.com/ministryofjustice/opg-file-service/internal/session"
+	"github.com/ministryofjustice/opg-file-service/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

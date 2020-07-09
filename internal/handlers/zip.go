@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-file-service/storage"
+	"github.com/ministryofjustice/opg-file-service/internal/storage"
 )
 
 type Repository interface {
