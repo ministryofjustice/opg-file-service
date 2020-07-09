@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -106,8 +107,8 @@ func main() {
 	}()
 
 	// Gracefully shutdown when signal received
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-c
 	logger.Println("Received terminate, graceful shutdown", sig)
