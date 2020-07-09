@@ -54,11 +54,6 @@ func (entry Entry) Validate() (bool, []error) {
 }
 
 func (entry Entry) DeDupe() {
-	type fileCounter struct {
-		filename string
-		count    int
-	}
-
 	var filesAdded []fileCounter
 
 	for i, file := range entry.Files {

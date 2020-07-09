@@ -265,10 +265,6 @@ func (m *MockDynamoDB) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemO
 	return args.Get(0).(*dynamodb.PutItemOutput), args.Error(1)
 }
 
-func str(s string) *string {
-	return &s
-}
-
 func newValidGetItemOutput(ref string) *dynamodb.GetItemOutput {
 	item := map[string]*dynamodb.AttributeValue{
 		"Files": {
