@@ -47,7 +47,7 @@ func main() {
     // ---
     // responses:
     //   '200':
-    //     description: Checks to see if file service is up and running
+    //     description: File service is up and running
     //   '404':
     //     description: Not found
     sm.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +86,7 @@ func main() {
     //   '403':
     //     description: Access denied
     //   '401':
-    //     description: Missing JWT token
+    //     description: Missing, invalid or expired JWT token
     //   '500':
     //     description: Unexpected error occurred
     getRouter.Handle("/zip/{reference}", zh)
@@ -124,7 +124,7 @@ func main() {
     //   '403':
     //     description: Access denied
     //   '401':
-    //     description: Missing JWT token
+    //     description: Missing, invalid or expired JWT token
     //   '500':
     //     description: Unexpected error occurred
 
