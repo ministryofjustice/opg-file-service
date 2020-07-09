@@ -12,7 +12,7 @@ paths:
       operationId: health-check
       responses:
         "200":
-          description: Checks to see if file service is up and running
+          description: File service is up and running
         "404":
           description: Not found
       tags:
@@ -33,7 +33,7 @@ paths:
         "200":
           description: Zip file download
         "401":
-          description: Missing JWT token
+          description: Missing, invalid or expired JWT token
         "403":
           description: Access denied
         "404":
@@ -74,7 +74,7 @@ paths:
                 type: string
             type: object
         "401":
-          description: Missing JWT token
+          description: Missing, invalid or expired JWT token
         "403":
           description: Access denied
         "500":
