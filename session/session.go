@@ -11,14 +11,13 @@ type Session struct {
 }
 
 func NewSession(region string, iamRole string) (*Session, error) {
-	sess, err := session.NewSession(&aws.Config{Region: &region})
+	sess, err := session.NewSession(&aws.Config{Region: aws.String(region)})
 	if err != nil {
 		return nil, err
 	}
 
 	if iamRole != "" {
-		c := stscreds.NewCredentials(sess, iamRole)
-		*sess.Config.Credentials = *c
+		sess.Config.Credentials = stscreds.NewCredentials(sess, iamRole)
 	}
 
 	return &Session{sess}, nil
