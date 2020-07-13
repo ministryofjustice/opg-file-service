@@ -17,7 +17,7 @@ services:
       SERVICES: s3,dynamodb
     volumes:
       - "./scripts/localstack:/docker-entrypoint-initaws.d"
-  swagger:
+  swagger-ui:
     image: swaggerapi/swagger-ui
     environment:
       SWAGGER_JSON: /tmp/swagger.yaml
@@ -25,3 +25,12 @@ services:
       - ./swagger.yaml:/tmp/swagger.yaml
     ports:
       - 8383:8080
+  swagger-generate:
+    image: quay.io/goswagger/swagger
+    environment:
+      GO111MODULE: "off"
+      GOPATH: /go
+    volumes:
+      - ./:/go/src
+    working_dir: /go/src
+    entrypoint: ["swagger", "generate", "spec", "-o", "/go/src/swagger.yaml", "--scan-models"]
