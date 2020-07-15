@@ -31,7 +31,7 @@ Generally they sit in `main_test.go`. The test suite will start up the file serv
 
 ## Swagger docs
 
-Run `make docs` or `make swagger` to view swagger docs at http://localhost:8383/
+Run `make docs` or `make swagger-up` to view swagger docs at http://localhost:8383/
 
 #### Updating swagger docs
 

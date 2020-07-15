@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"strconv"
 	"time"
 )
@@ -9,13 +8,8 @@ import (
 type Entry struct {
 	Ref   string
 	Hash  string
-	Ttl   int64 // Unix timestamp
-	Files []File
-}
-
-type fileCounter struct {
-	filename string
-	count    int
+	Ttl   int64  // Unix timestamp
+	Files []File `json:"files"`
 }
 
 func (entry Entry) IsExpired() bool {
@@ -23,34 +17,54 @@ func (entry Entry) IsExpired() bool {
 	return ttlTime.Before(time.Now())
 }
 
-func (entry Entry) Validate() (bool, []error) {
-	var errs []error
+func (entry Entry) Validate() (bool, *ErrValidation) {
+	var errs []ErrFieldValidation
 
 	if entry.Ref == "" {
-		errs = append(errs, errors.New("entry Ref cannot be blank"))
+		errs = append(errs, ErrFieldValidation{
+			Field:   "Ref",
+			Message: "entry Ref cannot be blank",
+		})
 	}
 
 	if entry.Hash == "" {
-		errs = append(errs, errors.New("user Hash cannot be blank"))
+		errs = append(errs, ErrFieldValidation{
+			Field:   "Hash",
+			Message: "user Hash cannot be blank",
+		})
 	}
 
 	if entry.Ttl == 0 {
-		errs = append(errs, errors.New("entry Ttl cannot be blank"))
+		errs = append(errs, ErrFieldValidation{
+			Field:   "Ttl",
+			Message: "entry Ttl cannot be blank",
+		})
 	} else if entry.IsExpired() {
-		errs = append(errs, errors.New("entry has expired"))
+		errs = append(errs, ErrFieldValidation{
+			Field:   "IsExpired",
+			Message: "entry has expired",
+		})
 	}
 
 	if len(entry.Files) == 0 {
-		errs = append(errs, errors.New("entry does not contain any Files"))
+		errs = append(errs, ErrFieldValidation{
+			Field:   "Files",
+			Message: "entry does not contain any Files",
+		})
 	}
 
 	for _, file := range entry.Files {
-		if ok, fileErrs := file.Validate(); !ok {
-			errs = append(errs, fileErrs...)
+		if ok, validationErr := file.Validate(); !ok {
+			errs = append(errs, validationErr.Errors...)
 		}
 	}
 
-	return len(errs) == 0, errs
+	var err *ErrValidation
+	if len(errs) > 0 {
+		err = &ErrValidation{Errors: errs}
+	}
+
+	return len(errs) == 0, err
 }
 
 func (entry Entry) DeDupe() {

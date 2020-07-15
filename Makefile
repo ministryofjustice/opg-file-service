@@ -13,9 +13,12 @@ swagger-generate: # Generate API swagger docs from inline code annotations using
     -f docker-compose.yml run --rm swagger-generate
 	docker-compose --project-name file-service-docs-generate down
 
-swagger: # Serve swagger API docs on port 8383
+swagger-up: # Serve swagger API docs on port 8383
 	docker-compose --project-name file-service-docs \
     -f docker-compose.yml up -d --force-recreate swagger-ui
 
-docs: # Alias for make swagger (Generate API swagger docs)
-	make swagger
+swagger-down:
+	docker-compose --project-name file-service-docs down
+
+docs: # Alias for make swagger-up (Generate API swagger docs)
+	make swagger-up

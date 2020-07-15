@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -43,22 +42,22 @@ func TestFile_GetRelativePath(t *testing.T) {
 
 func TestFile_GetFileNameAndExtension(t *testing.T) {
 	tests := []struct {
-	    scenario        string
-		filename        string
-		wantFilename    string
-		wantExtension   string
+		scenario      string
+		filename      string
+		wantFilename  string
+		wantExtension string
 	}{
 		{"Filename with one dot", "filename.txt", "filename", "txt"},
-        {"Filename with mutiple dots", "filename.something.txt", "filename.something", "txt"},
-        {"Filename with no file extension", "filename", "filename", ""},
+		{"Filename with mutiple dots", "filename.something.txt", "filename.something", "txt"},
+		{"Filename with no file extension", "filename", "filename", ""},
 	}
 
-    file := File{}
+	file := File{}
 	for _, test := range tests {
 		file.FileName = test.filename
 		filename, extension := file.GetFileNameAndExtension()
 		assert.Equal(t, test.wantFilename, filename, test.scenario)
-        assert.Equal(t, test.wantExtension, extension, test.scenario)
+		assert.Equal(t, test.wantExtension, extension, test.scenario)
 	}
 }
 
@@ -67,7 +66,7 @@ func TestFile_Validate(t *testing.T) {
 		scenario  string
 		file      *File
 		wantValid bool
-		wantErrs  []error
+		wantErr   *ErrValidation
 	}{
 		{
 			"No errors returned for valid file",
@@ -83,16 +82,18 @@ func TestFile_Validate(t *testing.T) {
 			"Blank S3Path and FileName",
 			&File{},
 			false,
-			[]error{
-				errors.New("S3Path cannot be blank"),
-				errors.New("FileName cannot be blank"),
+			&ErrValidation{
+				Errors: []ErrFieldValidation{
+					{Field: "S3Path", Message: "S3Path cannot be blank"},
+					{Field: "FileName", Message: "FileName cannot be blank"},
+				},
 			},
 		},
 	}
 
 	for _, test := range tests {
-		valid, errs := test.file.Validate()
+		valid, err := test.file.Validate()
 		assert.Equal(t, test.wantValid, valid, test.scenario)
-		assert.Equal(t, test.wantErrs, errs, test.scenario)
+		assert.Equal(t, test.wantErr, err, test.scenario)
 	}
 }

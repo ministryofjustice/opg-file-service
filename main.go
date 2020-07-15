@@ -57,12 +57,52 @@ func main() {
 	// Create a sub-router for protected handlers
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.Use(middleware.JwtVerify)
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.Use(middleware.JwtVerify)
 
-	// Register protected handlers
-	zh, err := handlers.NewZipHandler(l)
+	// swagger:operation POST /zip/request zip request
+	// Makes a request for a set of files to be downloaded from S3
+	// ---
+	// security:
+	//  - Bearer: []
+	// parameters:
+	// - name: files
+	//   in: body
+	//   description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
+	//   required: true
+	//   schema:
+	//       type: array
+	//       items:
+	//           type: object
+	//           properties:
+	//              s3path:
+	//                  type: string
+	//              filename:
+	//                  type: string
+	//              folder:
+	//                  type: string
+	// responses:
+	//   '201':
+	//     description: Zip request created
+	//     schema:
+	//       type: object
+	//       properties:
+	//         link:
+	//           type: string
+	//           description: Link to download the zip file
+	//   '403':
+	//     description: Access denied
+	//   '401':
+	//     description: Missing, invalid or expired JWT token
+	//   '400':
+	//     description: Invalid JSON request
+	//   '500':
+	//     description: Unexpected error occurred
+	zrh, err := handlers.NewZipRequestHandler(l)
 	if err != nil {
 		l.Fatal(err)
 	}
+	postRouter.Handle("/zip/request", zrh)
 
 	// swagger:operation GET /zip/{reference} zip download
 	// Download Zip file from zip request reference
@@ -89,46 +129,11 @@ func main() {
 	//     description: Missing, invalid or expired JWT token
 	//   '500':
 	//     description: Unexpected error occurred
+	zh, err := handlers.NewZipHandler(l)
+	if err != nil {
+		l.Fatal(err)
+	}
 	getRouter.Handle("/zip/{reference}", zh)
-
-	// swagger:operation POST /zip/request zip request
-	// Makes a request for a set of files to be downloaded from S3
-	// ---
-	// security:
-	//  - Bearer: []
-	// parameters:
-	// - name: files
-	//   in: body
-	//   description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
-	//   required: true
-	//   schema:
-	//       type: array
-	//       items:
-	//           type: object
-	//           properties:
-	//              s3path:
-	//                  type: string
-	//              filename:
-	//                  type: string
-	//              folder:
-	//                  type: string
-	// responses:
-	//   '200':
-	//     description: Zip file download
-	//     schema:
-	//       type: object
-	//       properties:
-	//         link:
-	//           type: string
-	//           description: Link to download the zip file
-	//   '403':
-	//     description: Access denied
-	//   '401':
-	//     description: Missing, invalid or expired JWT token
-	//   '500':
-	//     description: Unexpected error occurred
-
-	// @todo write code for this endpoint (or generate?)
 
 	s := &http.Server{
 		Addr:         ":8000",           // configure the bind address

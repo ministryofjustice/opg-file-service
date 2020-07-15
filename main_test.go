@@ -2,14 +2,17 @@ package main
 
 import (
 	"archive/zip"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
-	"log"
+	"net"
 	"net/http"
-	"opg-file-service/dynamo"
+	"opg-file-service/handlers"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"os"
@@ -24,8 +27,8 @@ type EndToEndTestSuite struct {
 	sess       *session.Session
 	s3         *s3.S3
 	s3uploader *s3manager.Uploader
-	repo       *dynamo.Repository
 	testEntry  *storage.Entry
+	authHeader string
 }
 
 func (suite *EndToEndTestSuite) SetupSuite() {
@@ -36,7 +39,6 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 	s3sess.Config.S3ForcePathStyle = aws.Bool(true)
 	suite.s3 = s3.New(&s3sess)
 	suite.s3uploader = s3manager.NewUploader(&s3sess)
-	suite.repo = dynamo.NewRepository(*suite.sess, new(log.Logger))
 
 	// create an S3 bucket
 	suite.s3.CreateBucket(&s3.CreateBucketInput{
@@ -48,9 +50,6 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 
 	// define fixtures
 	suite.testEntry = &storage.Entry{
-		Ref:  "test",
-		Hash: "d1a046e6300ea9a75cc4f9eda85e8442c3e9913b8eeb4ed0895896571e479a99", // hash is for Test.McTestFace@mail.com
-		Ttl:  9999999999,
 		Files: []storage.File{
 			{
 				S3path:   "s3://files/file1",
@@ -68,16 +67,7 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 		},
 	}
 
-	// start the app
-	go main()
-}
-
-func (suite *EndToEndTestSuite) TearDownSuite() {
-	suite.ClearFixtures()
-}
-
-func (suite *EndToEndTestSuite) SetupTest() {
-	suite.ClearFixtures()
+	suite.authHeader = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6OTk5OTk5OTk5OSwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.8HtN6aTAnE2YFI9rJD8drzqgrXPkyUbwRRJymcPSmHk"
 
 	// add files to bucket
 	for _, file := range suite.testEntry.Files {
@@ -88,26 +78,34 @@ func (suite *EndToEndTestSuite) SetupTest() {
 		})
 	}
 
-	// add a "zip request" to DynamoDB
-	if ok, errs := suite.testEntry.Validate(); !ok {
-		suite.Failf("Invalid entry: %e", "", errs)
+	// start the app
+	go main()
+
+	// wait up to 5 seconds for the server to start
+	retries := 5
+	for i := 1; i <= retries; i++ {
+		conn, err := net.DialTimeout("tcp", "localhost:8000", time.Second)
+		if err != nil {
+			time.Sleep(time.Second)
+			continue
+		}
+		conn.Close()
+		return
 	}
-	suite.repo.Add(suite.testEntry)
+
+	suite.Fail(fmt.Sprintf("Unable to start file service server after %d attempts", retries))
 }
 
-func (suite *EndToEndTestSuite) ClearFixtures() {
+func (suite *EndToEndTestSuite) TearDownSuite() {
 	// empty the bucket
 	iter := s3manager.NewDeleteListIterator(suite.s3, &s3.ListObjectsInput{
 		Bucket: suite.bucket,
 	})
 	s3manager.NewBatchDeleteWithClient(suite.s3).Delete(aws.BackgroundContext(), iter)
-
-	// delete entry from DynamoDB
-	suite.repo.Delete(suite.testEntry)
 }
 
 func (suite *EndToEndTestSuite) GetUrl(path string) string {
-	return "http://localhost:8000/" + os.Getenv("PATH_PREFIX") + path
+	return "http://localhost:8000" + os.Getenv("PATH_PREFIX") + path
 }
 
 func (suite *EndToEndTestSuite) TestHealthCheck() {
@@ -117,11 +115,36 @@ func (suite *EndToEndTestSuite) TestHealthCheck() {
 }
 
 func (suite *EndToEndTestSuite) TestZip() {
-	// download zip file
-	req, _ := http.NewRequest("GET", suite.GetUrl("/zip/test"), nil)
-	req.Header.Set("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6OTk5OTk5OTk5OSwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.8HtN6aTAnE2YFI9rJD8drzqgrXPkyUbwRRJymcPSmHk")
 	client := new(http.Client)
+
+	// create a new zip request
+	jsonBody, _ := json.Marshal(suite.testEntry)
+
+	fmt.Println(string(jsonBody))
+
+	reqBody := bytes.NewReader(jsonBody)
+	req, _ := http.NewRequest(http.MethodPost, suite.GetUrl("/zip/request"), reqBody)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", suite.authHeader)
+
 	resp, err := client.Do(req)
+	if err != nil {
+		suite.Fail("", err)
+	}
+	defer resp.Body.Close()
+
+	suite.Equal(http.StatusCreated, resp.StatusCode)
+
+	var respBody handlers.ZipRequestResponseBody
+	err = json.NewDecoder(resp.Body).Decode(&respBody)
+	if err != nil {
+		suite.Fail("", err)
+	}
+
+	// download zip file
+	req, _ = http.NewRequest("GET", suite.GetUrl(respBody.Link), nil)
+	req.Header.Set("Authorization", suite.authHeader)
+	resp, err = client.Do(req)
 	if err != nil {
 		suite.Fail("", err)
 	}
@@ -129,7 +152,10 @@ func (suite *EndToEndTestSuite) TestZip() {
 
 	suite.Equal(http.StatusOK, resp.StatusCode)
 
-	// store file on disk because zip.Reader expects an io.ReaderAt
+	suite.Contains(respBody.Link, "/zip/")
+	suite.Greater(len(respBody.Link), len("/zip/"))
+
+	// store file on disk because zip.Reader expects an io.ReaderAt0
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		suite.Fail("", err)
