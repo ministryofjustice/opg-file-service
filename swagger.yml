@@ -65,14 +65,16 @@ paths:
             type: object
           type: array
       responses:
-        "200":
-          description: Zip file download
+        "201":
+          description: Zip request created
           schema:
             properties:
               link:
                 description: Link to download the zip file
                 type: string
             type: object
+        "400":
+          description: Invalid JSON request
         "401":
           description: Missing, invalid or expired JWT token
         "403":

@@ -2,16 +2,15 @@ package storage
 
 import (
 	"archive/zip"
-	"errors"
 	"regexp"
 	"strings"
 	"time"
 )
 
 type File struct {
-	S3path   string
-	FileName string
-	Folder   string
+	S3path   string `json:"s3path"`
+	FileName string `json:"filename"`
+	Folder   string `json:"folder"`
 }
 
 func (f *File) GetZipFileHeader() *zip.FileHeader {
@@ -51,18 +50,29 @@ func (f *File) GetRelativePath() string {
 	return path + file
 }
 
-func (f *File) Validate() (bool, []error) {
-	var errs []error
+func (f *File) Validate() (bool, *ErrValidation) {
+	var errs []ErrFieldValidation
 
 	if f.S3path == "" {
-		errs = append(errs, errors.New("S3Path cannot be blank"))
+		errs = append(errs, ErrFieldValidation{
+			Field:   "S3Path",
+			Message: "S3Path cannot be blank",
+		})
 	}
 
 	if f.FileName == "" {
-		errs = append(errs, errors.New("FileName cannot be blank"))
+		errs = append(errs, ErrFieldValidation{
+			Field:   "FileName",
+			Message: "FileName cannot be blank",
+		})
 	}
 
-	return len(errs) == 0, errs
+	var err *ErrValidation
+	if len(errs) > 0 {
+		err = &ErrValidation{Errors: errs}
+	}
+
+	return len(errs) == 0, err
 }
 
 func (f *File) GetFileNameAndExtension() (string, string) {

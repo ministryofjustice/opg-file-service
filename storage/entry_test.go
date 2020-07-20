@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -28,7 +27,7 @@ func TestEntry_Validate(t *testing.T) {
 		scenario  string
 		entry     *Entry
 		wantValid bool
-		wantErrs  []error
+		wantErr   *ErrValidation
 	}{
 		{
 			"No errors returned for valid entry",
@@ -37,10 +36,7 @@ func TestEntry_Validate(t *testing.T) {
 				Hash: "user",
 				Ttl:  9999999999,
 				Files: []File{
-					{
-						S3path:   "s3://files/file",
-						FileName: "file",
-					},
+					{S3path: "s3://files/file", FileName: "file"},
 				},
 			},
 			true,
@@ -50,11 +46,13 @@ func TestEntry_Validate(t *testing.T) {
 			"Validate blank fields",
 			&Entry{},
 			false,
-			[]error{
-				errors.New("entry Ref cannot be blank"),
-				errors.New("user Hash cannot be blank"),
-				errors.New("entry Ttl cannot be blank"),
-				errors.New("entry does not contain any Files"),
+			&ErrValidation{
+				Errors: []ErrFieldValidation{
+					{Field: "Ref", Message: "entry Ref cannot be blank"},
+					{Field: "Hash", Message: "user Hash cannot be blank"},
+					{Field: "Ttl", Message: "entry Ttl cannot be blank"},
+					{Field: "Files", Message: "entry does not contain any Files"},
+				},
 			},
 		},
 		{
@@ -64,15 +62,14 @@ func TestEntry_Validate(t *testing.T) {
 				Hash: "test",
 				Ttl:  1,
 				Files: []File{
-					{
-						S3path:   "s3://files/file",
-						FileName: "file",
-					},
+					{S3path: "s3://files/file", FileName: "file"},
 				},
 			},
 			false,
-			[]error{
-				errors.New("entry has expired"),
+			&ErrValidation{
+				Errors: []ErrFieldValidation{
+					{Field: "IsExpired", Message: "entry has expired"},
+				},
 			},
 		},
 		{
@@ -93,65 +90,69 @@ func TestEntry_Validate(t *testing.T) {
 	for _, test := range tests {
 		if len(test.entry.Files) > 0 {
 			// append file validation errors to expected errors
-			_, fileErrs := test.entry.Files[0].Validate()
-			test.wantErrs = append(test.wantErrs, fileErrs...)
+			_, fileErr := test.entry.Files[0].Validate()
+			if fileErr != nil && test.wantErr != nil {
+				test.wantErr.Errors = append(test.wantErr.Errors, fileErr.Errors...)
+			} else if fileErr != nil && test.wantErr == nil {
+				test.wantErr = fileErr
+			}
 		}
-		valid, errs := test.entry.Validate()
+		valid, err := test.entry.Validate()
 		assert.Equal(t, test.wantValid, valid, test.scenario)
-		assert.Equal(t, test.wantErrs, errs, test.scenario)
+		assert.Equal(t, test.wantErr, err, test.scenario)
 	}
 }
 
 func TestEntry_DeDupe(t *testing.T) {
 	tests := []struct {
-		scenario string
+		scenario    string
 		filesBefore []File
-		filesAfter []File
+		filesAfter  []File
 	}{
 		{
 			"Files with no duplicates",
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file2.csv",Folder: ""},
-				{FileName: "file3.pdf",Folder: ""},
-				{FileName: "file4.xls",Folder: ""},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file2.csv", Folder: ""},
+				{FileName: "file3.pdf", Folder: ""},
+				{FileName: "file4.xls", Folder: ""},
 			},
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file2.csv",Folder: ""},
-				{FileName: "file3.pdf",Folder: ""},
-				{FileName: "file4.xls",Folder: ""},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file2.csv", Folder: ""},
+				{FileName: "file3.pdf", Folder: ""},
+				{FileName: "file4.xls", Folder: ""},
 			},
 		},
 		{
 			"Files with duplicates",
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file2.pdf",Folder: ""},
-				{FileName: "file2.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory/another-directory"},
-				{FileName: "file5",Folder: "some-directory/another-directory/more-directory"},
-				{FileName: "file5",Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file2.pdf", Folder: ""},
+				{FileName: "file2.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory/another-directory"},
+				{FileName: "file5", Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file5", Folder: "some-directory/another-directory/more-directory"},
 			},
 			[]File{
-				{FileName: "file1.txt",Folder: ""},
-				{FileName: "file1 (1).txt",Folder: ""},
-				{FileName: "file2.pdf",Folder: ""},
-				{FileName: "file2.pdf",Folder: "some-directory"},
-				{FileName: "file3.pdf",Folder: "some-directory"},
-				{FileName: "file3 (1).pdf",Folder: "some-directory"},
-				{FileName: "file3 (2).pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory"},
-				{FileName: "file4 (1).pdf",Folder: "some-directory"},
-				{FileName: "file4.pdf",Folder: "some-directory/another-directory"},
-				{FileName: "file5",Folder: "some-directory/another-directory/more-directory"},
-				{FileName: "file5 (1)",Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file1.txt", Folder: ""},
+				{FileName: "file1 (1).txt", Folder: ""},
+				{FileName: "file2.pdf", Folder: ""},
+				{FileName: "file2.pdf", Folder: "some-directory"},
+				{FileName: "file3.pdf", Folder: "some-directory"},
+				{FileName: "file3 (1).pdf", Folder: "some-directory"},
+				{FileName: "file3 (2).pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory"},
+				{FileName: "file4 (1).pdf", Folder: "some-directory"},
+				{FileName: "file4.pdf", Folder: "some-directory/another-directory"},
+				{FileName: "file5", Folder: "some-directory/another-directory/more-directory"},
+				{FileName: "file5 (1)", Folder: "some-directory/another-directory/more-directory"},
 			},
 		},
 	}

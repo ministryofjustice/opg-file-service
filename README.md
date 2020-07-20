@@ -31,9 +31,11 @@ Generally they sit in `main_test.go`. The test suite will start up the file serv
 
 ## Swagger docs
 
-Run `make docs` or `make swagger` to view swagger docs at http://localhost:8383/
+Run `make docs` or `make swagger-up` to view swagger docs at http://localhost:8383/
 
 #### Updating swagger docs
+
+Run `make swagger-generate` to update the swagger.yml file
 
 The file service uses [Go Swagger](https://goswagger.io/) to generate the ./swagger.yml file from annotations in the code itself. See ./main.go for examples. [Go Swagger](https://goswagger.io/) is based on [Swagger 2.0](https://swagger.io/docs/specification/2-0/basic-structure/). Be careful not to confuse it with OpenAPI v3.
 
