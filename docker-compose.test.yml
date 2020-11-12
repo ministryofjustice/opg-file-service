@@ -14,5 +14,4 @@ services:
       - .:/go/src/app
   localstack:
     ports:
-      - 4569
-      - 4572
+      - 4566

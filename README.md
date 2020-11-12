@@ -3,12 +3,12 @@
 Small microservice built with Go to enable users of Sirius to download multiple files from S3.
 
 ## Local Development
-    
+
 ### Required Tools
 
  - Go 1.14.2
  - Docker with docker-compose
- 
+
 ### Optional Tools
 
 - [GoTestSum](https://github.com/gotestyourself/gotestsum) - `go test` runner with optimized output
@@ -27,7 +27,7 @@ Run `make test` to execute the test suites and output code coverage for each pac
 
 End-to-end tests are executed as part of the `make test` command.
 
-Generally they sit in `main_test.go`. The test suite will start up the file service in a go-routine to run tests against it, and therefore all ENV variables required for configuring the service have to be set prior to running the test suite. This is all automated with the `make test` command. 
+Generally they sit in `main_test.go`. The test suite will start up the file service in a go-routine to run tests against it, and therefore all ENV variables required for configuring the service have to be set prior to running the test suite. This is all automated with the `make test` command.
 
 ## Swagger docs
 
@@ -64,13 +64,13 @@ The middleware will also create a SHA-256 hash of the `session-data` value from 
 
 ## Environment Variables
 
-| Variable                  | Default                           |  Description   | 
+| Variable                  | Default                           |  Description   |
 | ------------------------- | --------------------------------- | -------------- |
 | JWT_SECRET                | MyTestSecret                      | Environment variable used to set the key for verifying JWT tokens, this should be overwritten in an environment |
 | USER_HASH_SALT            | ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0  | Defines what hash to use when hashing user emails, this should match the hash being used on sirius              |
 | AWS_DYNAMODB_TABLE_NAME   | zip-requests                      | Table name where zip requests are stored                                                                        |
-| AWS_S3_ENDPOINT           |                                   | Used for overwriting the S3 endpoint locally e.g. http://localstack:4572                                        |
-| AWS_DYNAMODB_ENDPOINT     |                                   | Used for overwriting the DynamoDB endpoint locally e.g. http://localstack:4569                                  |
+| AWS_S3_ENDPOINT           |                                   | Used for overwriting the S3 endpoint locally e.g. http://localstack:4566                                        |
+| AWS_DYNAMODB_ENDPOINT     |                                   | Used for overwriting the DynamoDB endpoint locally e.g. http://localstack:4566                                  |
 | AWS_REGION                | eu-west-1                         | Set the AWS region for all operations with the SDK                                                              |
 | AWS_ACCESS_KEY_ID         |                                   | Used for authenticating with localstack e.g. set to "localstack"                                                |
 | AWS_SECRET_ACCESS_KEY     |                                   | Used for authenticating with localstack e.g. set to "localstack"                                                |
