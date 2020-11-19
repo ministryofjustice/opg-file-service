@@ -43,6 +43,7 @@ orbs:
     executors:
       python:
         docker: [image: circleci/python]
+        resource_class: small
 
 jobs:
   test_file_service:
@@ -60,6 +61,7 @@ jobs:
         environment:
           DEFAULT_REGION: eu-west-1
           SERVICES: s3,dynamodb
+    resource_class: small
     steps:
       - checkout
       - run:
@@ -111,7 +113,7 @@ jobs:
             fi
       - when:
           condition:
-            equal: [ SP-543, << pipeline.git.branch >> ]
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
             - run:
                 name: Update Parameter Store Green Build value
