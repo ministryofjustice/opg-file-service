@@ -5,18 +5,24 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"log"
 	"net/http"
+	"opg-file-service/cache"
 	"opg-file-service/internal"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+)
+
+var (
+	secretsCache = cache.New()
 )
 
 type HashedEmail struct{}
 
 func JwtVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		jwtSecret := internal.GetEnvVar("JWT_SECRET", "MyTestSecret")
+		jwtSecret, _ := secretsCache.GetSecretString("jwt_key")
 
 		//Get the token from the header
 		header := r.Header.Get("Authorization")
@@ -56,7 +62,7 @@ func JwtVerify(next http.Handler) http.Handler {
 
 // Create a hash of the users email
 func hashEmail(e string) string {
-	salt := internal.GetEnvVar("USER_HASH_SALT", "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0")
+	salt, _ := secretsCache.GetSecretString("user-hash-salt")
 	h := sha256.New()
 	h.Write([]byte(salt + e))
 	return hex.EncodeToString(h.Sum(nil))
