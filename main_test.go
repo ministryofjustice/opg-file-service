@@ -5,10 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -19,6 +15,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/stretchr/testify/suite"
 )
 
 type EndToEndTestSuite struct {
@@ -32,6 +33,7 @@ type EndToEndTestSuite struct {
 }
 
 func (suite *EndToEndTestSuite) SetupSuite() {
+	os.Setenv("ENVIRONMENT", "local")
 	suite.sess, _ = session.NewSession()
 	suite.bucket = aws.String("files")
 	s3sess := *suite.sess.AwsSession

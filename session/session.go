@@ -1,11 +1,12 @@
 package session
 
 import (
+	"opg-file-service/internal"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"opg-file-service/internal"
-	"os"
 )
 
 type Session struct {
@@ -19,7 +20,10 @@ func NewSession() (*Session, error) {
 		awsRegion = "eu-west-1" // default region
 	}
 
-	sess, err := session.NewSession(&aws.Config{Region: &awsRegion})
+	sess, err := session.NewSession(&aws.Config{
+		Region:   &awsRegion,
+		LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody),
+	})
 	if err != nil {
 		return nil, err
 	}

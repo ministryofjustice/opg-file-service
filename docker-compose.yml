@@ -14,7 +14,9 @@ services:
     environment:
       DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
-      SERVICES: s3,dynamodb,
+      SERVICES: s3,dynamodb,secretsmanager
+    ports:
+      - 4566:4566
     volumes:
       - "./scripts/localstack:/docker-entrypoint-initaws.d"
   swagger-ui:

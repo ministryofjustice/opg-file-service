@@ -13,7 +13,7 @@ awslocal dynamodb update-time-to-live \
   --time-to-live-specification "Enabled=true, AttributeName=Ttl"
 
 # Set secrets in Secrets Manager
-awslocal secretsmanager create-secret --name local/jwt-key \
+awslocal secretsmanager create-secret --name local/jwt-secret \
     --description "JWT secret for Go services authentication" \
     --secret-string "MyTestSecret"
 

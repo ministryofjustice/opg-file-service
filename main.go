@@ -22,15 +22,17 @@ package main
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 	"log"
 	"net/http"
+	"opg-file-service/cache"
 	"opg-file-service/handlers"
 	"opg-file-service/middleware"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 
 func main() {
@@ -54,11 +56,13 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	secretsCache := cache.New()
+
 	// Create a sub-router for protected handlers
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.Use(middleware.JwtVerify)
+	getRouter.Use(middleware.JwtVerify(secretsCache))
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
-	postRouter.Use(middleware.JwtVerify)
+	postRouter.Use(middleware.JwtVerify(secretsCache))
 
 	// swagger:operation POST /zip/request zip request
 	// Makes a request for a set of files to be downloaded from S3

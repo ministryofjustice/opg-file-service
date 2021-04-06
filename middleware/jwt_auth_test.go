@@ -1,10 +1,29 @@
 package middleware
 
 import (
-	"github.com/stretchr/testify/assert"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+type mockSecretsCache struct{}
+
+func (c *mockSecretsCache) GetSecretString(key string) (string, error) {
+	switch key {
+	case "jwt-secret":
+		return "MyTestSecret", nil
+	case "user-hash-salt":
+		return "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0", nil
+	default:
+		return "", errors.New("Invalid test parameters in cache")
+	}
+}
+
+var (
+	mockCache = mockSecretsCache{}
 )
 
 func TestJwtVerify(t *testing.T) {
@@ -52,7 +71,7 @@ func TestJwtVerify(t *testing.T) {
 		testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
 		rw := httptest.NewRecorder()
-		handler := JwtVerify(testHandler)
+		handler := JwtVerify(&mockCache)(testHandler)
 		handler.ServeHTTP(rw, req)
 
 		assert.Equal(t, test.expectedCode, rw.Result().StatusCode, test.scenario)
@@ -63,6 +82,6 @@ func TestHashEmail(t *testing.T) {
 	assert.Equal(
 		t,
 		"d1a046e6300ea9a75cc4f9eda85e8442c3e9913b8eeb4ed0895896571e479a99",
-		hashEmail("Test.McTestFace@mail.com"),
+		hashEmail("Test.McTestFace@mail.com", "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0"),
 	)
 }
