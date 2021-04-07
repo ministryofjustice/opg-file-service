@@ -13,7 +13,7 @@ type mockSecretsCache struct{}
 
 func (c *mockSecretsCache) GetSecretString(key string) (string, error) {
 	switch key {
-	case "jwt-secret":
+	case "jwt-key":
 		return "MyTestSecret", nil
 	case "user-hash-salt":
 		return "ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0", nil

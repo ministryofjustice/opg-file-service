@@ -19,7 +19,7 @@ type HashedEmail struct{}
 func JwtVerify(secretsCache cache.Cacheable) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			jwtSecret, jwtErr := secretsCache.GetSecretString("jwt-secret")
+			jwtSecret, jwtErr := secretsCache.GetSecretString("jwt-key")
 
 			if jwtErr != nil {
 				log.Fatal(jwtErr.Error())
