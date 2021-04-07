@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"opg-file-service/cache"
 	"opg-file-service/internal"
 	"strings"
 
@@ -16,7 +15,11 @@ import (
 
 type HashedEmail struct{}
 
-func JwtVerify(secretsCache cache.Cacheable) func(next http.Handler) http.Handler {
+type Cacheable interface {
+	GetSecretString(key string) (string, error)
+}
+
+func JwtVerify(secretsCache Cacheable) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			jwtSecret, jwtErr := secretsCache.GetSecretString("jwt-key")
