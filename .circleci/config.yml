@@ -55,12 +55,14 @@ jobs:
           DATA_DIR: /tmp/localstack/data
           AWS_ACCESS_KEY_ID: localstack
           AWS_SECRET_ACCESS_KEY: localstack
+          DEFAULT_REGION: eu-west-1
           AWS_S3_ENDPOINT: http://localhost:4566
           AWS_DYNAMODB_ENDPOINT: http://localhost:4566
+          SECRETS_MANAGER_ENDPOINT: http://localhost:4566
       - image: localstack/localstack:0.12.2
         environment:
           DEFAULT_REGION: eu-west-1
-          SERVICES: s3,dynamodb
+          SERVICES: s3,dynamodb,secretsmanager
     resource_class: small
     steps:
       - checkout
