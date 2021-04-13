@@ -25,7 +25,9 @@ func JwtVerify(secretsCache Cacheable) func(next http.Handler) http.Handler {
 			jwtSecret, jwtErr := secretsCache.GetSecretString("jwt-key")
 
 			if jwtErr != nil {
-				log.Fatal(jwtErr.Error())
+				log.Println("Error in fetching JWT secret from cache:", jwtErr.Error())
+				internal.WriteJSONError(rw, "missing_secret_key", jwtErr.Error(), http.StatusInternalServerError)
+				return
 			}
 
 			//Get the token from the header
@@ -39,7 +41,7 @@ func JwtVerify(secretsCache Cacheable) func(next http.Handler) http.Handler {
 
 			header = strings.Split(header, "Bearer ")[1]
 
-			token, err := jwt.Parse(header, func(token *jwt.Token) (i interface{}, err error) {
+			token, parseErr := jwt.Parse(header, func(token *jwt.Token) (i interface{}, err error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 				}
@@ -47,17 +49,19 @@ func JwtVerify(secretsCache Cacheable) func(next http.Handler) http.Handler {
 			})
 
 			// Return the error
-			if err != nil {
-				internal.WriteJSONError(rw, "error_with_token", err.Error(), http.StatusUnauthorized)
+			if parseErr != nil {
+				internal.WriteJSONError(rw, "error_with_token", parseErr.Error(), http.StatusUnauthorized)
 				return
 			}
 
 			if token.Valid {
 				claims := token.Claims.(jwt.MapClaims)
 				e := claims["session-data"].(string)
-				salt, err := secretsCache.GetSecretString("user-hash-salt")
-				if err != nil {
-					log.Fatalln(err.Error())
+				salt, saltErr := secretsCache.GetSecretString("user-hash-salt")
+				if saltErr != nil {
+					log.Println("Error in fetching hash salt from cache:", saltErr.Error())
+					internal.WriteJSONError(rw, "missing_secret_salt", saltErr.Error(), http.StatusInternalServerError)
+					return
 				}
 				he := hashEmail(e, salt)
 				log.Println("JWT Token is valid for user ", he)
