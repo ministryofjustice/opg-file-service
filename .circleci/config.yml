@@ -128,4 +128,4 @@ jobs:
                   aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "$CIRCLE_BRANCH-$SHORT_HASH" --overwrite --region=eu-west-1
             - run:
                 name: Trigger Sirius Platform Deployment
-                command: curl -u ${JENKINS_API_USER}:${JENKINS_API_TOKEN} "https://${JENKINS_URL}/job/Sirius/job/Deploy_to_Development/buildWithParameters?token=${JENKINS_API_TOKEN_NAME}&cause=Triggered+by+opg-file-service"
+                command: curl -u ${JENKINS_API_USER}:${JENKINS_API_TOKEN} "https://${JENKINS_URL}/job/Sirius/job/Deploy_to_Development/build?token=${JENKINS_API_TOKEN_NAME}&cause=Triggered+by+opg-file-service"
