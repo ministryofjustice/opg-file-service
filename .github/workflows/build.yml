@@ -3,10 +3,10 @@ name: Test & Build
 on:
   pull_request:
     branches:
-      - main
+      - master
   push:
     branches:
-      - main
+      - master
 
 defaults:
  run:
@@ -36,8 +36,8 @@ jobs:
           - 4566:4566
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-go
-      - uses: actions/setup-python
+      - uses: actions/setup-go@v2
+      - uses: actions/setup-python@v2
       - uses: unfor19/install-aws-cli-action@v1
       - run: |
           python -m pip install awscli-local
