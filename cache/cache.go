@@ -10,7 +10,11 @@ import (
 
 type SecretsCache struct {
 	env   string
-	cache *secretcache.Cache
+	cache AwsSecretsCache
+}
+
+type AwsSecretsCache interface {
+	GetSecretString(secretId string) (string, error)
 }
 
 func applyAwsConfig(c *secretcache.Cache) {
