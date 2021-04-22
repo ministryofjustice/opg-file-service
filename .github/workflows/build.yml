@@ -38,6 +38,10 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
       - uses: actions/setup-python@v2
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v1.0.0
+        with:
+          gotestsum_version: 1.6.4
       - uses: unfor19/install-aws-cli-action@v1
       - run: |
           python -m pip install awscli-local
@@ -46,12 +50,12 @@ jobs:
         run: |
           chmod +x localstack_init.sh
           ./localstack_init.sh
-
       - name: Resolve GO Dependencies
         run: |
           go mod download
       - run: |
           mkdir -p ${{ env.TEST_RESULTS }}
+
       - name: Run Unit and Intergration Tests
         run: |
           gotestsum --junitfile unit-tests.xml
@@ -66,14 +70,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Extract branch name
-        run: echo 'BRANCH_NAME='${GITHUB_HEAD_REF#refs/heads/}) >> $GITHUB_ENV
+        run: echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
         id: extract_branch
       - uses: unfor19/install-aws-cli-action@v1
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SHARED }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SHARED }}
           aws-region: eu-west-1
           role-to-assume: arn:aws:iam::311462405659:role/shared-ci
           role-duration-seconds: 3600
@@ -98,7 +102,7 @@ jobs:
         run: |
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:$BRANCH_NAME-$SHORT_HASH
-          if [ "${BRANCH_NAME" == "master" ]; then
+          if [ $BRANCH_NAME == "master" ]; then
             # We want all of the tags pushed
             docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
           else
