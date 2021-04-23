@@ -18,10 +18,10 @@ type AwsSecretsCache interface {
 }
 
 func applyAwsConfig(c *secretcache.Cache) {
-	session, _ := session.NewSession()
+	sess, _ := session.NewSession()
 	endpoint := os.Getenv("SECRETS_MANAGER_ENDPOINT")
-	session.AwsSession.Config.Endpoint = &endpoint
-	c.Client = secretsmanager.New(session.AwsSession)
+	sess.AwsSession.Config.Endpoint = &endpoint
+	c.Client = secretsmanager.New(sess.AwsSession)
 }
 
 func New() *SecretsCache {
