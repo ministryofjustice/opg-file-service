@@ -1,0 +1,148 @@
+name: Test & Build
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: "Test File Service"
+    runs-on: ubuntu-latest
+    env:
+      TEST_RESULTS: /tmp/test-results
+      GOTESTSUM_FORMAT: short-verbose
+      DATA_DIR: /tmp/localstack/data
+      AWS_ACCESS_KEY_ID: localstack
+      AWS_SECRET_ACCESS_KEY: localstack
+      DEFAULT_REGION: eu-west-1
+      AWS_S3_ENDPOINT: http://localhost:4566
+      AWS_DYNAMODB_ENDPOINT: http://localhost:4566
+      SECRETS_MANAGER_ENDPOINT: http://localhost:4566
+    services:
+      localstack:
+        image: localstack/localstack:0.12.2
+        env:
+          DEFAULT_REGION: eu-west-1
+          SERVICES: s3,dynamodb,secretsmanager
+        ports:
+          - 4566:4566
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - uses: actions/setup-python@v2
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v1.0.0
+        with:
+          gotestsum_version: 1.6.4
+      - uses: unfor19/install-aws-cli-action@v1
+      - run: |
+          python -m pip install awscli-local
+      - name: Localstack Setup
+        working-directory: ./scripts/localstack
+        run: |
+          chmod +x localstack_init.sh
+          ./localstack_init.sh
+      - name: Resolve GO Dependencies
+        run: |
+          go mod download
+      - run: |
+          mkdir -p ${{ env.TEST_RESULTS }}
+
+      - name: Run Unit and Intergration Tests
+        run: |
+          gotestsum --junitfile unit-tests.xml
+
+  build:
+    name: "Build & Push Containers"
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      branch: ${{ steps.set-outputs.outputs.branch }}
+      new_tag: ${{ steps.bump_version.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Extract branch name
+        run: echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+        id: extract_branch
+      - uses: unfor19/install-aws-cli-action@v1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SHARED }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SHARED }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::311462405659:role/shared-ci
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Build Container
+        run: |
+          docker build --file Dockerfile --tag file_service:latest .
+
+      - name: Bump version
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.33.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INITIAL_VERSION: 1.0.0
+          DEFAULT_BUMP: minor
+          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
+          RELEASE_BRANCHES: master
+          WITH_V: true
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: 311462405659
+          
+      - name: Push Container
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          FILE_SERVICE_ECR_REPOSITORY: file_service
+        run: |
+          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
+          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
+          if [ $BRANCH_NAME == "master" ]; then
+            # We want all of the tags pushed
+            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
+          else
+            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          fi
+
+  push-tags:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SHARED }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SHARED }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::997462338508:role/shared-ci
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Install AWS CLI
+        id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+
+      - name: Push Tag to Parameter Store
+        run: |
+          aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "${{ needs.build.outputs.new_tag}}" --overwrite --region=eu-west-1
+
+      - name: Trigger Dev Deploy
+        shell: bash
+        run: curl -u ${{ secrets.JENKINS_API_USER }}:${{ secrets.JENKINS_API_TOKEN }} "https://${{ secrets.JENKINS_URL }}/job/Sirius/job/Deploy_to_Development/build?token=${{ secrets.JENKINS_API_TOKEN_NAME }}&cause=Triggered+by+opg-file-service"
