@@ -3,10 +3,10 @@ name: Test & Build
 on:
   pull_request:
     branches:
-      - master
+      - main
   push:
     branches:
-      - master
+      - main
 
 defaults:
   run:
@@ -95,7 +95,7 @@ jobs:
           INITIAL_VERSION: 1.0.0
           DEFAULT_BUMP: minor
           PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
-          RELEASE_BRANCHES: master
+          RELEASE_BRANCHES: main
           WITH_V: true
 
       - name: ECR Login
@@ -111,7 +111,7 @@ jobs:
         run: |
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
-          if [ $BRANCH_NAME == "master" ]; then
+          if [ $BRANCH_NAME == "main" ]; then
             # We want all of the tags pushed
             docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
           else
@@ -121,7 +121,7 @@ jobs:
   push-tags:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v2
 
