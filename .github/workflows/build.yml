@@ -9,12 +9,12 @@ on:
       - master
 
 defaults:
- run:
-  shell: bash
+  run:
+    shell: bash
 
 jobs:
   test:
-    name: 'Test File Service'
+    name: "Test File Service"
     runs-on: ubuntu-latest
     env:
       TEST_RESULTS: /tmp/test-results
@@ -61,12 +61,12 @@ jobs:
           gotestsum --junitfile unit-tests.xml
 
   build:
-    name: 'Build & Push Containers'
+    name: "Build & Push Containers"
     runs-on: ubuntu-latest
     needs: test
     outputs:
-      hash: ${{ steps.set-outputs.outputs.hash }}
       branch: ${{ steps.set-outputs.outputs.branch }}
+      new_tag: ${{ steps.bump_version.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v2
       - name: Extract branch name
@@ -87,37 +87,41 @@ jobs:
         run: |
           docker build --file Dockerfile --tag file_service:latest .
 
+      - name: Bump version
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.33.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INITIAL_VERSION: 1.0.0
+          DEFAULT_BUMP: minor
+          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
+          RELEASE_BRANCHES: master
+          WITH_V: true
+
       - name: ECR Login
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registries: 311462405659
-      - name: Get Short Hash
-        run: |
-          echo 'SHORT_HASH='${GITHUB_SHA:0:7} >> $GITHUB_ENV
+          
       - name: Push Container
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           FILE_SERVICE_ECR_REPOSITORY: file_service
         run: |
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
-          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:$BRANCH_NAME-$SHORT_HASH
+          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
           if [ $BRANCH_NAME == "master" ]; then
             # We want all of the tags pushed
             docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
           else
-            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:$BRANCH_NAME-$SHORT_HASH
+            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
           fi
-      - name: Set Outputs
-        id: set-outputs
-        run: |
-          echo "::set-output name=hash::${{ env.SHORT_HASH }}"
-          echo "::set-output name=branch::${{ env.BRANCH_NAME }}"
 
   push-tags:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v2
 
@@ -137,11 +141,8 @@ jobs:
 
       - name: Push Tag to Parameter Store
         run: |
-          aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "${{ needs.build.outputs.branch }}-${{ needs.build.outputs.hash }}" --overwrite --region=eu-west-1
+          aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "${{ needs.build.outputs.new_tag}}" --overwrite --region=eu-west-1
 
       - name: Trigger Dev Deploy
         shell: bash
         run: curl -u ${{ secrets.JENKINS_API_USER }}:${{ secrets.JENKINS_API_TOKEN }} "https://${{ secrets.JENKINS_URL }}/job/Sirius/job/Deploy_to_Development/build?token=${{ secrets.JENKINS_API_TOKEN_NAME }}&cause=Triggered+by+opg-file-service"
-
-
-
