@@ -7,6 +7,8 @@ updates:
       interval: "daily"
       time: "10:00"
       timezone: "Europe/London"
+    pull-request-branch-name:
+      separator: "-"
 
   - package-ecosystem: "docker"
     directory: "/"
@@ -14,3 +16,5 @@ updates:
       interval: "daily"
       time: "10:00"
       timezone: "Europe/London"
+    pull-request-branch-name:
+      separator: "-"
