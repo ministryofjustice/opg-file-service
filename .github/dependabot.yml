@@ -1,0 +1,73 @@
+version: 2
+updates:
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # cache
+  - package-ecosystem: "gomod"
+    directory: "/cache"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # dynamo
+  - package-ecosystem: "gomod"
+    directory: "/dynamo"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # handlers
+  - package-ecosystem: "gomod"
+    directory: "/handlers"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # internal
+  - package-ecosystem: "gomod"
+    directory: "/internal"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # middleware
+  - package-ecosystem: "gomod"
+    directory: "/middleware"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # session
+  - package-ecosystem: "gomod"
+    directory: "/session"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # storage
+  - package-ecosystem: "gomod"
+    directory: "/storage"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # zipper
+  - package-ecosystem: "gomod"
+    directory: "/zipper"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
