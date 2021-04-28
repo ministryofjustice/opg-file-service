@@ -115,7 +115,7 @@ jobs:
             # We want all of the tags pushed
             docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
           else
-            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
           fi
 
   push-tags:
