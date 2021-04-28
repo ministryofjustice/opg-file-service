@@ -1,0 +1,79 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # cache
+  - package-ecosystem: "composer"
+    directory: "/cache"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # dynamo
+  - package-ecosystem: "composer"
+    directory: "/dynamo"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # handlers
+  - package-ecosystem: "npm"
+    directory: "/handlers"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # internal
+  - package-ecosystem: "composer"
+    directory: "/internal"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # middleware
+  - package-ecosystem: "npm"
+    directory: "/middleware"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # session
+  - package-ecosystem: "npm"
+    directory: "/session"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # storage
+  - package-ecosystem: "npm"
+    directory: "/storage"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
+
+  # zipper
+  - package-ecosystem: "npm"
+    directory: "/zipper"
+    schedule:
+      interval: "daily"
+      time: "10:00"
+      timezone: "Europe/London"
