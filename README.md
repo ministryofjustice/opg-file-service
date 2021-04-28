@@ -6,7 +6,6 @@ Small microservice built with Go to enable users of Sirius to download multiple 
 
 ### Required Tools
 
- - Go 1.14.2
  - Docker with docker-compose
 
 ### Optional Tools
