@@ -66,7 +66,7 @@ jobs:
     needs: test
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
-      new_tag: ${{ steps.bump_version.outputs.new_tag }}
+      tag: ${{ steps.bump_version.outputs.tag }}
     steps:
       - uses: actions/checkout@v2
       - name: Extract branch name
@@ -110,7 +110,7 @@ jobs:
           FILE_SERVICE_ECR_REPOSITORY: file_service
         run: |
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
-          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
+          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
           if [ $BRANCH_NAME == "main" ]; then
             # We want all of the tags pushed
             docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
@@ -141,7 +141,7 @@ jobs:
 
       - name: Push Tag to Parameter Store
         run: |
-          aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "${{ needs.build.outputs.new_tag}}" --overwrite --region=eu-west-1
+          aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "${{ needs.build.outputs.tag}}" --overwrite --region=eu-west-1
 
       - name: Trigger Dev Deploy
         shell: bash
