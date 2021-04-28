@@ -1,13 +1,7 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      time: "10:00"
-      timezone: "Europe/London"
 
-  - package-ecosystem: "composer"
+  - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "daily"
@@ -15,7 +9,7 @@ updates:
       timezone: "Europe/London"
 
   # cache
-  - package-ecosystem: "composer"
+  - package-ecosystem: "gomod"
     directory: "/cache"
     schedule:
       interval: "daily"
@@ -23,7 +17,7 @@ updates:
       timezone: "Europe/London"
 
   # dynamo
-  - package-ecosystem: "composer"
+  - package-ecosystem: "gomod"
     directory: "/dynamo"
     schedule:
       interval: "daily"
@@ -31,7 +25,7 @@ updates:
       timezone: "Europe/London"
 
   # handlers
-  - package-ecosystem: "npm"
+  - package-ecosystem: "gomod"
     directory: "/handlers"
     schedule:
       interval: "daily"
@@ -39,7 +33,7 @@ updates:
       timezone: "Europe/London"
 
   # internal
-  - package-ecosystem: "composer"
+  - package-ecosystem: "gomod"
     directory: "/internal"
     schedule:
       interval: "daily"
@@ -47,7 +41,7 @@ updates:
       timezone: "Europe/London"
 
   # middleware
-  - package-ecosystem: "npm"
+  - package-ecosystem: "gomod"
     directory: "/middleware"
     schedule:
       interval: "daily"
@@ -55,7 +49,7 @@ updates:
       timezone: "Europe/London"
 
   # session
-  - package-ecosystem: "npm"
+  - package-ecosystem: "gomod"
     directory: "/session"
     schedule:
       interval: "daily"
@@ -63,7 +57,7 @@ updates:
       timezone: "Europe/London"
 
   # storage
-  - package-ecosystem: "npm"
+  - package-ecosystem: "gomod"
     directory: "/storage"
     schedule:
       interval: "daily"
@@ -71,7 +65,7 @@ updates:
       timezone: "Europe/London"
 
   # zipper
-  - package-ecosystem: "npm"
+  - package-ecosystem: "gomod"
     directory: "/zipper"
     schedule:
       interval: "daily"
