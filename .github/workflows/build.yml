@@ -110,7 +110,7 @@ jobs:
           FILE_SERVICE_ECR_REPOSITORY: file_service
         run: |
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
-          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
+          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
           if [ $BRANCH_NAME == "main" ]; then
             # We want all of the tags pushed
             docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
