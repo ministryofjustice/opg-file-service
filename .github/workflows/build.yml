@@ -50,9 +50,18 @@ jobs:
         run: |
           chmod +x localstack_init.sh
           ./localstack_init.sh
+
+      - name: Resolve GO mod cache
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Resolve GO Dependencies
         run: |
           go mod download
+          
       - run: |
           mkdir -p ${{ env.TEST_RESULTS }}
 
