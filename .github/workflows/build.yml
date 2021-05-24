@@ -61,7 +61,7 @@ jobs:
       - name: Resolve GO Dependencies
         run: |
           go mod download
-          
+
       - run: |
           mkdir -p ${{ env.TEST_RESULTS }}
 
@@ -97,7 +97,7 @@ jobs:
           PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
           RELEASE_BRANCHES: main
           WITH_V: true
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -113,17 +113,18 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registries: 311462405659
-          
+
       - name: Push Container
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           FILE_SERVICE_ECR_REPOSITORY: file_service
         run: |
-          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
-          if [ $BRANCH_NAME == "main" ]; then
+          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
+          if [ "$BRANCH_NAME" == "main" ]; then
             # We want all of the tags pushed
-            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
+            docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
+            docker push --all-tags $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
           else
             docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
           fi
