@@ -121,7 +121,9 @@ jobs:
         run: |
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
           docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
+          echo "Branch Name: $BRANCH_NAME"
           if [ "$BRANCH_NAME" == "main" ]; then
+            echo "Pushing all tags."
             # We want all of the tags pushed
             docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
             docker push --all-tags $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
