@@ -10,7 +10,7 @@ import (
 	"opg-file-service/internal"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type HashedEmail struct{}
