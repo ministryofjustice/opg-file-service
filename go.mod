@@ -3,7 +3,7 @@ module opg-file-service
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go v1.39.0
+	github.com/aws/aws-sdk-go v1.41.13
 	github.com/aws/aws-secretsmanager-caching-go v1.1.0
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/gorilla/mux v1.8.0
