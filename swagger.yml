@@ -2,7 +2,8 @@ basePath: /
 consumes:
 - application/json
 info:
-  description: Documentation for creating a file request and downloading files using the API
+  description: Documentation for creating a file request and downloading files using
+    the API
   title: File service API
   version: 1.0.0
 paths:
@@ -49,7 +50,8 @@ paths:
       description: Makes a request for a set of files to be downloaded from S3
       operationId: request
       parameters:
-      - description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
+      - description: s3 file paths alongside the human readable filenames as each
+          file will be displayed in the zip file
         in: body
         name: files
         required: true
