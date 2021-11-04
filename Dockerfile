@@ -19,4 +19,9 @@ RUN apk --update --no-cache add \
 RUN apk --no-cache add tzdata
 
 COPY --from=build-env /go/bin/zipper /go/bin/zipper
+
+RUN addgroup -S app && adduser -S -g app app \
+    && chown app:app /go/bin/zipper
+USER app
+
 ENTRYPOINT ["/go/bin/zipper"]
