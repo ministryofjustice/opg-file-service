@@ -36,3 +36,6 @@ services:
       - ./:/go/src
     working_dir: /go/src
     entrypoint: ["swagger", "generate", "spec", "-o", "/go/src/swagger.yml", "--scan-models"]
+  wait-for-it:
+    image: wait-for-it
+    build: ./wait-for-it
