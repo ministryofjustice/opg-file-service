@@ -34,7 +34,7 @@ func TestJwtVerify(t *testing.T) {
 	}{
 		{
 			"Valid token",
-			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6OTk5OTk5OTk5OSwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.8HtN6aTAnE2YFI9rJD8drzqgrXPkyUbwRRJymcPSmHk",
+			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6MzAwMDAwMDAwMCwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.T1ufbp8mDZBGp84BqLnC2Vb366aVJfrZl_XaGeX4SH8",
 			mockValue{"MyTestSecret", nil},
 			mockValue{"ufUvZWyqrCikO1HPcPfrz7qQ6ENV84p0", nil},
 			200,
@@ -76,7 +76,7 @@ func TestJwtVerify(t *testing.T) {
 		},
 		{
 			"Cannot fetch salt secret",
-			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6OTk5OTk5OTk5OSwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.8HtN6aTAnE2YFI9rJD8drzqgrXPkyUbwRRJymcPSmHk",
+			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODcwNTIzMTcsImV4cCI6MzAwMDAwMDAwMCwic2Vzc2lvbi1kYXRhIjoiVGVzdC5NY1Rlc3RGYWNlQG1haWwuY29tIn0.T1ufbp8mDZBGp84BqLnC2Vb366aVJfrZl_XaGeX4SH8",
 			mockValue{"MyTestSecret", nil},
 			mockValue{"", errors.New("Missing secret")},
 			500,
@@ -84,26 +84,28 @@ func TestJwtVerify(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		req, err := http.NewRequest("GET", "/jwt", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(test.scenario, func(t *testing.T) {
+			req, err := http.NewRequest("GET", "/jwt", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		if test.token != "" {
-			req.Header.Set("Authorization", "Bearer "+test.token)
-		}
-		testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+			if test.token != "" {
+				req.Header.Set("Authorization", "Bearer "+test.token)
+			}
+			testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
-		rw := httptest.NewRecorder()
+			rw := httptest.NewRecorder()
 
-		mockCache := new(mockSecretsCache)
-		mockCache.On("GetSecretString", "jwt-key").Return(test.secret.v, test.secret.e)
-		mockCache.On("GetSecretString", "user-hash-salt").Return(test.salt.v, test.salt.e)
-		handler := JwtVerify(mockCache)(testHandler)
-		handler.ServeHTTP(rw, req)
-		res := rw.Result()
+			mockCache := new(mockSecretsCache)
+			mockCache.On("GetSecretString", "jwt-key").Return(test.secret.v, test.secret.e)
+			mockCache.On("GetSecretString", "user-hash-salt").Return(test.salt.v, test.salt.e)
+			handler := JwtVerify(mockCache)(testHandler)
+			handler.ServeHTTP(rw, req)
+			res := rw.Result()
 
-		assert.Equal(t, test.expectedCode, res.StatusCode, test.scenario)
+			assert.Equal(t, test.expectedCode, res.StatusCode, test.scenario)
+		})
 	}
 }
 
