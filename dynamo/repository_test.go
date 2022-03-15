@@ -3,15 +3,16 @@ package dynamo
 import (
 	"bytes"
 	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/stretchr/testify/assert"
-	"log"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"os"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/ministryofjustice/opg-go-common/logging"
+	"github.com/stretchr/testify/assert"
 )
 
 func str(s string) *string {
@@ -45,7 +46,7 @@ func TestNewRepository(t *testing.T) {
 	for _, test := range tests {
 		sess, _ := session.NewSession()
 		buf := new(bytes.Buffer)
-		l := log.New(buf, "test", log.LstdFlags)
+		l := logging.New(buf, "opg-file-service-test")
 
 		os.Unsetenv("AWS_DYNAMODB_ENDPOINT")
 		os.Unsetenv("AWS_DYNAMODB_TABLE_NAME")
@@ -153,7 +154,7 @@ func TestRepository_Get(t *testing.T) {
 
 	for _, test := range tests {
 		buf := new(bytes.Buffer)
-		l := log.New(buf, "", log.LstdFlags)
+		l := logging.New(buf, "opg-file-service-test")
 		mdb := MockDynamoDB{}
 
 		repo := Repository{
@@ -213,7 +214,7 @@ func TestRepository_Delete(t *testing.T) {
 
 		repo := Repository{
 			db:     &mdb,
-			logger: &log.Logger{},
+			logger: &logging.Logger{},
 			table:  "table",
 		}
 
@@ -271,7 +272,7 @@ func TestRepository_Add(t *testing.T) {
 
 		repo := Repository{
 			db:     &mdb,
-			logger: &log.Logger{},
+			logger: &logging.Logger{},
 			table:  "table",
 		}
 
