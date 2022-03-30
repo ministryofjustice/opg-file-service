@@ -11,7 +11,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/zipper
 
-FROM alpine:3.15.0
+FROM alpine:3.15.3
 
 RUN apk --update --no-cache add \
     ca-certificates \
