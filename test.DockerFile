@@ -1,3 +1,3 @@
-FROM golang:1.17.5
+FROM golang:1.18.0
 
 RUN go get -u gotest.tools/gotestsum
