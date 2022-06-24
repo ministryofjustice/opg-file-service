@@ -65,9 +65,15 @@ jobs:
       - run: |
           mkdir -p ${{ env.TEST_RESULTS }}
 
-      - name: Run Unit and Intergration Tests
+      - name: Run Unit and Integration Tests
         run: |
-          gotestsum --junitfile unit-tests.xml
+          gotestsum --junitfile unit-tests.xml --format short-verbose -- -coverprofile=./cover.out ./...
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   build:
     name: "Build & Push Containers"
