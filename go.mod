@@ -10,6 +10,5 @@ require (
 	github.com/ministryofjustice/opg-go-common v0.0.0-20220308143936-cab4e8742f40
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.4.0
-	github.com/stretchr/objx v0.2.0 // indirect
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.5
 )
