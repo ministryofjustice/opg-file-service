@@ -79,7 +79,6 @@ jobs:
     name: "Build & Push Containers"
     runs-on: ubuntu-latest
     needs: test
-    if: github.actor != 'dependabot[bot]'
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
       tag: ${{ steps.bump_version.outputs.tag }}
@@ -102,6 +101,7 @@ jobs:
       - name: Bump version
         id: bump_version
         uses: anothrNick/github-tag-action@1.36.0
+        if: github.actor != 'dependabot[bot]'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INITIAL_VERSION: 1.0.0
@@ -112,6 +112,7 @@ jobs:
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
+        if: github.actor != 'dependabot[bot]'
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
@@ -123,6 +124,7 @@ jobs:
       - name: ECR Login
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        if: github.actor != 'dependabot[bot]'
         with:
           registries: 311462405659
 
