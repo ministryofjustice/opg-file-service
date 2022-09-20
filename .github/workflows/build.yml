@@ -130,6 +130,7 @@ jobs:
           registries: 311462405659
 
       - name: Push Container
+        if: github.actor != 'dependabot[bot]'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           FILE_SERVICE_ECR_REPOSITORY: file_service
