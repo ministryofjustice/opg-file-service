@@ -21,6 +21,8 @@ github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGw
 github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfCI6z80xFu9LTZmf1ZRjMHUOPmWr69U=
 github.com/ministryofjustice/opg-go-common v0.0.0-20220308143936-cab4e8742f40 h1:KodVRjPhzFGVwPEY08NT7Q8/aNLBAWmHCAqfV+StMV8=
 github.com/ministryofjustice/opg-go-common v0.0.0-20220308143936-cab4e8742f40/go.mod h1:1RmCNi6dkAv8umAgNHp8RkuBoSKLlxp1UtfsGYH7ufc=
+github.com/ministryofjustice/opg-go-common v0.0.0-20220816144329-763497f29f90 h1:mxTHIeCYV7LDZPN7C44wwLlBTUsgQ0G8FQprsrsKXaA=
+github.com/ministryofjustice/opg-go-common v0.0.0-20220816144329-763497f29f90/go.mod h1:1RmCNi6dkAv8umAgNHp8RkuBoSKLlxp1UtfsGYH7ufc=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0 h1:MHKgp78y85hSH7xnciNp3DCu8naeNAtUx5r7s/Q9mzk=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0/go.mod h1:Xc+DW9mL8o34oBadko+6sdrpu62G1tuKbjedy5vFnX4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
