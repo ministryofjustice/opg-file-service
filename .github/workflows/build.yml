@@ -89,7 +89,7 @@ jobs:
           if [ "${{ github.head_ref }}" == "" ]; then
             echo BRANCH_NAME=main >> $GITHUB_ENV
           else
-            echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+            echo BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/\//-/g') >> $GITHUB_ENV
           fi
         id: extract_branch
       - uses: unfor19/install-aws-cli-action@v1
@@ -100,7 +100,7 @@ jobs:
 
       - name: Bump version
         id: bump_version
-        uses: anothrNick/github-tag-action@1.36.0
+        uses: anothrNick/github-tag-action@1.52.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INITIAL_VERSION: 1.0.0

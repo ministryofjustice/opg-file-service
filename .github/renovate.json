@@ -44,8 +44,5 @@
         "branchTopic": "{{{datasource}}}-{{{depName}}}-vulnerability",
         "prCreation": "immediate",
         "prPriority": 2
-    },
-    "ignoreDeps": [
-        "anothrNick/github-tag-action"
-    ]
+    }
 }
