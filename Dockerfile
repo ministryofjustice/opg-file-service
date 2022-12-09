@@ -1,4 +1,4 @@
-FROM golang:1.19.3 as build-env
+FROM golang:1.19.4 as build-env
 
 WORKDIR /app
 
