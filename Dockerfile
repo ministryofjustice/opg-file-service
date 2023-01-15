@@ -1,4 +1,4 @@
-FROM golang:1.19.4 as build-env
+FROM golang:1.19.5 as build-env
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/zipper
 
-FROM alpine:3.17.0
+FROM alpine:3.17.1
 
 RUN apk --update --no-cache add \
     ca-certificates \
