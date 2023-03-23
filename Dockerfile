@@ -11,12 +11,13 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/zipper
 
-FROM alpine:3.17.2
+FROM alpine:3
 
 RUN apk --update --no-cache add \
     ca-certificates \
+    tzdata \
     && rm -rf /var/cache/apk/*
-RUN apk --no-cache add tzdata
+RUN apk --no-cache upgrade libcrypto3 libssl3
 
 COPY --from=build-env /go/bin/zipper /go/bin/zipper
 
