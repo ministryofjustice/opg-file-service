@@ -3,6 +3,9 @@ all: build test
 build:
 	docker-compose build file_service
 
+scan:
+	trivy image 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
+
 test: ## Run all test suites
 	docker-compose --project-name file-service-test \
 		-f docker-compose.yml -f docker-compose.test.yml \
