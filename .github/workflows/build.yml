@@ -28,7 +28,7 @@ jobs:
       SECRETS_MANAGER_ENDPOINT: http://localhost:4566
     services:
       localstack:
-        image: localstack/localstack:1.4.0
+        image: localstack/localstack:2.0.0
         env:
           DEFAULT_REGION: eu-west-1
           SERVICES: s3,dynamodb,secretsmanager
