@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-go@v4
       - uses: actions/setup-python@v4
       - name: Setup gotestsum
-        uses: autero1/action-gotestsum@v1.0.0
+        uses: autero1/action-gotestsum@v2.0.0
         with:
           gotestsum_version: 1.6.4
       - uses: unfor19/install-aws-cli-action@v1
