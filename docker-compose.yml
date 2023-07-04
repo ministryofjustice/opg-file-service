@@ -10,7 +10,7 @@ services:
     env_file:
       - docker-compose.env
   localstack:
-    image: localstack/localstack:1.4.0
+    image: localstack/localstack:2.1.0
     environment:
       DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
