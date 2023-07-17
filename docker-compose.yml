@@ -3,7 +3,7 @@ version: "3.6"
 
 services:
   file_service:
-    image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
+    image: file_service:latest
     build: .
     ports:
       - 8000:8000
