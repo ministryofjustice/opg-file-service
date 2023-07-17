@@ -14,7 +14,7 @@ Small microservice built with Go to enable users of Sirius to download multiple 
 
 ### Development environment
 
-Use docker-compose commands to build/start/stop the service locally e.g. `docker-compose up --build` will rebuild and start the service.
+Use docker compose commands to build/start/stop the service locally e.g. `docker compose up --build` will rebuild and start the service.
 
 By default the local URL is http://localhost:8000/services/file-service, where `/services/file-service` is configured by the `PATH_PREFIX` ENV variable.
 
