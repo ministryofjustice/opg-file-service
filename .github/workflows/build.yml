@@ -59,16 +59,12 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Resolve GO Dependencies
-        run: |
-          go mod download
-
       - run: |
           mkdir -p ${{ env.TEST_RESULTS }}
 
       - name: Run Unit and Integration Tests
         run: |
-          gotestsum --junitfile unit-tests.xml --format short-verbose -- -coverprofile=./cover.out ./...
+          make go-test
 
   build:
     name: "Build & Push Containers"
@@ -91,13 +87,15 @@ jobs:
 
       - name: Build Container
         run: |
-          docker build --file Dockerfile --tag file_service:latest .
+          make build
 
       - name: Trivy Image Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: file_service:latest
           format: 'template'
+          exit-code: '1'
+          ignore-unfixed: true
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
 
