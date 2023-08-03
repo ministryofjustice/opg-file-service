@@ -18,15 +18,15 @@ jobs:
     name: "Test File Service"
     runs-on: ubuntu-latest
     env:
-      TEST_RESULTS: /tmp/test-results
-      GOTESTSUM_FORMAT: short-verbose
-      DATA_DIR: /tmp/localstack/data
       AWS_ACCESS_KEY_ID: localstack
-      AWS_SECRET_ACCESS_KEY: localstack
-      DEFAULT_REGION: eu-west-1
-      AWS_S3_ENDPOINT: http://localhost:4566
+      AWS_DEFAULT_REGION: eu-west-1
       AWS_DYNAMODB_ENDPOINT: http://localhost:4566
+      AWS_S3_ENDPOINT: http://localhost:4566
+      AWS_SECRET_ACCESS_KEY: localstack
+      DATA_DIR: /tmp/localstack/data
+      GOTESTSUM_FORMAT: short-verbose
       SECRETS_MANAGER_ENDPOINT: http://localhost:4566
+      TEST_RESULTS: /tmp/test-results
     services:
       localstack:
         image: localstack/localstack:1.4.0
