@@ -22,9 +22,9 @@ services:
   swagger-ui:
     image: swaggerapi/swagger-ui
     environment:
-      SWAGGER_JSON: /tmp/swagger.yml
+      SWAGGER_JSON: /tmp/openapi.yml
     volumes:
-      - ./swagger.yml:/tmp/swagger.yml
+      - ./docs/openapi/openapi.yml:/tmp/openapi.yml
     ports:
       - 8383:8080
   swagger-generate:
@@ -35,7 +35,7 @@ services:
     volumes:
       - ./:/go/src
     working_dir: /go/src
-    entrypoint: ["swagger", "generate", "spec", "-o", "/go/src/swagger.yml", "--scan-models"]
+    entrypoint: ["swagger", "generate", "spec", "-o", "/go/src/docs/openapi/openapi.yml", "--scan-models"]
   wait-for-it:
     image: wait-for-it
     build: ./wait-for-it
