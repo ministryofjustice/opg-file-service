@@ -18,3 +18,9 @@ unit-tests.xml
 .idea
 .vscode
 *.iml
+
+test-results
+
+.cache
+.trivy-cache
+.gocache

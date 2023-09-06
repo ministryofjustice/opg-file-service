@@ -17,54 +17,17 @@ jobs:
   test:
     name: "Test File Service"
     runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: localstack
-      AWS_DEFAULT_REGION: eu-west-1
-      AWS_DYNAMODB_ENDPOINT: http://localhost:4566
-      AWS_S3_ENDPOINT: http://localhost:4566
-      AWS_SECRET_ACCESS_KEY: localstack
-      DATA_DIR: /tmp/localstack/data
-      GOTESTSUM_FORMAT: short-verbose
-      SECRETS_MANAGER_ENDPOINT: http://localhost:4566
-      TEST_RESULTS: /tmp/test-results
-    services:
-      localstack:
-        image: localstack/localstack:1.4.0
-        env:
-          DEFAULT_REGION: eu-west-1
-          SERVICES: s3,dynamodb,secretsmanager
-        ports:
-          - 4566:4566
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-      - uses: actions/setup-python@v4
-      - name: Setup gotestsum
-        uses: autero1/action-gotestsum@v2.0.0
-        with:
-          gotestsum_version: 1.6.4
-      - uses: unfor19/install-aws-cli-action@v1
-      - run: |
-          python -m pip install awscli-local
-      - name: Localstack Setup
-        working-directory: ./scripts/localstack
-        run: |
-          chmod +x localstack_init.sh
-          ./localstack_init.sh
-
-      - name: Resolve GO mod cache
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - run: |
-          mkdir -p ${{ env.TEST_RESULTS }}
-
       - name: Run Unit and Integration Tests
-        run: |
-          make go-test
+        run: make test
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: "Unit Test Results"
+          files: test-results/unit-tests.xml
 
   build:
     name: "Build & Push Containers"
@@ -86,24 +49,16 @@ jobs:
       - uses: unfor19/install-aws-cli-action@v1
 
       - name: Build Container
-        run: |
-          make build
+        run: make build
 
       - name: Trivy Image Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: file_service:latest
-          format: 'template'
-          exit-code: '1'
-          ignore-unfixed: true
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results.sarif'
+        run: make scan
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'test-results/trivy.sarif'
 
       - name: Bump version
         id: bump_version
@@ -134,18 +89,14 @@ jobs:
           registries: 311462405659
 
       - name: Push Container
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          FILE_SERVICE_ECR_REPOSITORY: file_service
         run: |
-          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
-          docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:latest
+          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:${{ steps.bump_version.outputs.tag }}
           if [ "$BRANCH_NAME" == "main" ]; then
             # We want all of the tags pushed
-            docker tag file_service:latest $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
-            docker push --all-tags $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY
+            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:main-${{ steps.bump_version.outputs.tag }}
+            docker push --all-tags 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service
           else
-            docker push $ECR_REGISTRY/$FILE_SERVICE_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:${{ steps.bump_version.outputs.tag }}
           fi
 
   push-tags:

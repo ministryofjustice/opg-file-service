@@ -1,38 +1,28 @@
-all: build scan test
+all: build scan test down
+
+up:
+	docker compose up -d --build file_service
 
 build:
 	docker compose build file_service
 
-scan:
-	trivy image 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
+test-results:
+	mkdir -p -m 0777 test-results .gocache .trivy-cache
 
-test: ## Run all test suites
-	docker compose --project-name file-service-test \
-		-f docker-compose.yml -f docker-compose.test.yml \
-		up -d localstack
-	docker compose --project-name file-service-test \
-		-f docker-compose.yml -f docker-compose.test.yml \
-		run --rm wait-for-it -address=localstack:4566 --timeout=30
-	docker compose --project-name file-service-test \
-		-f docker-compose.yml -f docker-compose.test.yml \
-		build file_service_test
-	docker compose --project-name file-service-test \
-		-f docker-compose.yml -f docker-compose.test.yml \
-		run --rm file_service_test make go-test
-	docker compose --project-name file-service-test down
+setup-directories: test-results
 
-go-test:
-	go mod download
-	gotestsum --junitfile unit-tests.xml --format short-verbose -- -coverprofile=./cover.out ./...
+scan: setup-directories
+	docker compose run --rm trivy image --format table --exit-code 0 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
+	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
+
+test: setup-directories
+	docker compose run --rm test-runner
 
 swagger-generate: # Generate API swagger docs from inline code annotations using Go Swagger (https://goswagger.io/)
-	docker compose --project-name file-service-docs-generate \
-		-f docker-compose.yml run --rm swagger-generate
-		docker compose --project-name file-service-docs-generate down
+	docker compose run --rm swagger-generate
 
 swagger-up docs: # Serve swagger API docs on port 8383
-	docker compose --project-name file-service-docs \
-    	-f docker-compose.yml up -d --force-recreate swagger-ui
-
-swagger-down:
-	docker compose --project-name file-service-docs down
+	docker compose up -d --force-recreate swagger-ui
+	@echo "Swagger docs available on http://localhost:8383/"
+down:
+	docker compose down
