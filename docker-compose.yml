@@ -3,12 +3,14 @@ version: "3.6"
 
 services:
   file_service:
-    image: file_service:latest
-    build: .
+    image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
+    build:
+      dockerfile: docker/file-service/Dockerfile
     ports:
       - 8000:8000
     env_file:
       - docker-compose.env
+
   localstack:
     image: localstack/localstack:1.4.0
     environment:
@@ -19,6 +21,7 @@ services:
       - 4566:4566
     volumes:
       - "./scripts/localstack:/docker-entrypoint-initaws.d"
+
   swagger-ui:
     image: swaggerapi/swagger-ui
     environment:
@@ -27,6 +30,7 @@ services:
       - ./swagger.yml:/tmp/swagger.yml
     ports:
       - 8383:8080
+
   swagger-generate:
     image: quay.io/goswagger/swagger
     environment:
@@ -36,6 +40,23 @@ services:
       - ./:/go/src
     working_dir: /go/src
     entrypoint: ["swagger", "generate", "spec", "-o", "/go/src/swagger.yml", "--scan-models"]
-  wait-for-it:
-    image: wait-for-it
-    build: ./wait-for-it
+  
+  test-runner:
+    depends_on:
+      - localstack
+    build:
+      dockerfile: docker/test-runner/Dockerfile
+    command: gotestsum --junitfile test-results/unit-tests.xml -- ./... -coverprofile=test-results/test-coverage.txt
+    env_file:
+      - docker-compose.env
+    working_dir: /go/src/app
+    volumes:
+      - ./:/go/src/app
+      - ./.gocache:/go/pkg/mod
+
+  trivy:
+    image: aquasec/trivy:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.trivy-cache:/root/.cache
+      - ./test-results:/test-results

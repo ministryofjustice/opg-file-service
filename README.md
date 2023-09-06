@@ -8,13 +8,9 @@ Small microservice built with Go to enable users of Sirius to download multiple 
 
  - Docker with docker-compose
 
-### Optional Tools
-
-- [GoTestSum](https://github.com/gotestyourself/gotestsum) - `go test` runner with optimized output
-
 ### Development environment
 
-Use docker compose commands to build/start/stop the service locally e.g. `docker compose up --build` will rebuild and start the service.
+Use docker compose commands to build/start/stop the service locally e.g. `docker compose up --build` or `make up` will rebuild and start the service.
 
 By default the local URL is http://localhost:8000/services/file-service, where `/services/file-service` is configured by the `PATH_PREFIX` ENV variable.
 
@@ -23,8 +19,6 @@ By default the local URL is http://localhost:8000/services/file-service, where `
 Run `make test` to execute the test suites and output code coverage for each package.
 
 #### End-to-end tests
-
-End-to-end tests are executed as part of the `make test` command.
 
 Generally they sit in `main_test.go`. The test suite will start up the file service in a go-routine to run tests against it, and therefore all ENV variables required for configuring the service have to be set prior to running the test suite. This is all automated with the `make test` command.
 
