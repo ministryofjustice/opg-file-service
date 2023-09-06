@@ -22,12 +22,12 @@ jobs:
       - name: Run Unit and Integration Tests
         run: make test
 
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
-      with:
-        check_name: "Unit Test Results"
-        files: test-results/unit-tests.xml
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: "Unit Test Results"
+          files: test-results/unit-tests.xml
 
   build:
     name: "Build & Push Containers"
@@ -90,13 +90,13 @@ jobs:
 
       - name: Push Container
         run: |
-          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest:${{ steps.bump_version.outputs.tag }}
+          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:${{ steps.bump_version.outputs.tag }}
           if [ "$BRANCH_NAME" == "main" ]; then
             # We want all of the tags pushed
-            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest:main-${{ steps.bump_version.outputs.tag }}
+            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:main-${{ steps.bump_version.outputs.tag }}
             docker push --all-tags 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service
           else
-            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest:${{ steps.bump_version.outputs.tag }}
+            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:${{ steps.bump_version.outputs.tag }}
           fi
 
   push-tags:
