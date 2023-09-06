@@ -1,100 +1,98 @@
 basePath: /
 consumes:
-- application/json
+    - application/json
 info:
-  description: Documentation for creating a file request and downloading files using
-    the API
-  title: File service API
-  version: 1.0.0
+    description: Documentation for creating a file request and downloading files using the API
+    title: File service API
+    version: 1.0.0
 paths:
-  /health-check:
-    get:
-      description: Register the health check handler
-      operationId: health-check
-      responses:
-        "200":
-          description: File service is up and running
-        "404":
-          description: Not found
-      tags:
-      - check
-  /zip/{reference}:
-    get:
-      description: Download Zip file from zip request reference
-      operationId: download
-      parameters:
-      - description: reference of the zip file request
-        in: path
-        name: reference
-        required: true
-      produces:
-      - application/zip
-      - application/json
-      responses:
-        "200":
-          description: Zip file download
-        "401":
-          description: Missing, invalid or expired JWT token
-        "403":
-          description: Access denied
-        "404":
-          description: File download request for ref not found
-        "500":
-          description: Unexpected error occurred
-      security:
-      - Bearer: []
-      tags:
-      - zip
-  /zip/request:
-    post:
-      description: Makes a request for a set of files to be downloaded from S3
-      operationId: request
-      parameters:
-      - description: s3 file paths alongside the human readable filenames as each
-          file will be displayed in the zip file
-        in: body
-        name: files
-        required: true
-        schema:
-          items:
-            properties:
-              filename:
-                type: string
-              folder:
-                type: string
-              s3path:
-                type: string
-            type: object
-          type: array
-      responses:
-        "201":
-          description: Zip request created
-          schema:
-            properties:
-              link:
-                description: Link to download the zip file
-                type: string
-            type: object
-        "400":
-          description: Invalid JSON request
-        "401":
-          description: Missing, invalid or expired JWT token
-        "403":
-          description: Access denied
-        "500":
-          description: Unexpected error occurred
-      security:
-      - Bearer: []
-      tags:
-      - zip
+    /health-check:
+        get:
+            description: Register the health check handler
+            operationId: health-check
+            responses:
+                "200":
+                    description: File service is up and running
+                "404":
+                    description: Not found
+            tags:
+                - check
+    /zip/{reference}:
+        get:
+            description: Download Zip file from zip request reference
+            operationId: download
+            parameters:
+                - description: reference of the zip file request
+                  in: path
+                  name: reference
+                  required: true
+            produces:
+                - application/zip
+                - application/json
+            responses:
+                "200":
+                    description: Zip file download
+                "401":
+                    description: Missing, invalid or expired JWT token
+                "403":
+                    description: Access denied
+                "404":
+                    description: File download request for ref not found
+                "500":
+                    description: Unexpected error occurred
+            security:
+                - Bearer: []
+            tags:
+                - zip
+    /zip/request:
+        post:
+            description: Makes a request for a set of files to be downloaded from S3
+            operationId: request
+            parameters:
+                - description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
+                  in: body
+                  name: files
+                  required: true
+                  schema:
+                    items:
+                        properties:
+                            filename:
+                                type: string
+                            folder:
+                                type: string
+                            s3path:
+                                type: string
+                        type: object
+                    type: array
+            responses:
+                "201":
+                    description: Zip request created
+                    schema:
+                        properties:
+                            link:
+                                description: Link to download the zip file
+                                type: string
+                        type: object
+                "400":
+                    description: Invalid JSON request
+                "401":
+                    description: Missing, invalid or expired JWT token
+                "403":
+                    description: Access denied
+                "500":
+                    description: Unexpected error occurred
+            security:
+                - Bearer: []
+            tags:
+                - zip
 produces:
-- application/json
+    - application/json
 schemes:
-- http
-- https
+    - http
+    - https
 securityDefinitions:
-  Bearer:
-    in: header
-    name: Authorization
-    type: apiKey
+    Bearer:
+        in: header
+        name: Authorization
+        type: apiKey
 swagger: "2.0"
