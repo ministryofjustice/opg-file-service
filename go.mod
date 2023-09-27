@@ -8,7 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/gorilla/mux v1.8.0
-	github.com/ministryofjustice/opg-go-common v0.0.0-20220816144329-763497f29f90
+	github.com/ministryofjustice/opg-go-common v0.0.0-20230927143549-86931d77c086
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
