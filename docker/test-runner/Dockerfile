@@ -1,4 +1,4 @@
-FROM golang:1.20.6-alpine
+FROM golang:1.21.3-alpine
 
 RUN go install gotest.tools/gotestsum@latest
 
