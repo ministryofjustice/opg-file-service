@@ -14,13 +14,14 @@ services:
   localstack:
     image: localstack/localstack:2.3.2
     environment:
-      DEFAULT_REGION: eu-west-1
+      AWS_DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
       SERVICES: s3,dynamodb,secretsmanager
+      DEBUG: 1
     ports:
       - 4566:4566
     volumes:
-      - "./scripts/localstack:/docker-entrypoint-initaws.d"
+      - "./scripts/localstack:/etc/localstack/init/ready.d"
 
   swagger-ui:
     image: swaggerapi/swagger-ui
@@ -40,7 +41,7 @@ services:
       - ./:/go/src
     working_dir: /go/src
     entrypoint: ["swagger", "generate", "spec", "-o", "/go/src/docs/openapi/openapi.yml", "--scan-models"]
-  
+
   test-runner:
     depends_on:
       - localstack
