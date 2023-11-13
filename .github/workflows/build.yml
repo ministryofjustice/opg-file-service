@@ -90,13 +90,13 @@ jobs:
 
       - name: Push Container
         run: |
-          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:${{ steps.bump_version.outputs.tag }}
+          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:${{ steps.bump_version.outputs.tag }}
           if [ "$BRANCH_NAME" == "main" ]; then
             # We want all of the tags pushed
-            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:main-${{ steps.bump_version.outputs.tag }}
-            docker push --all-tags 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service
+            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:main-${{ steps.bump_version.outputs.tag }}
+            docker push --all-tags 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service
           else
-            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:${{ steps.bump_version.outputs.tag }}
+            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:${{ steps.bump_version.outputs.tag }}
           fi
 
   push-tags:
