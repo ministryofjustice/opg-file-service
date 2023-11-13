@@ -1,10 +1,10 @@
 all: build scan test down
 
 up:
-	docker compose up -d --build file_service
+	docker compose up -d --build file-service
 
 build:
-	docker compose build file_service
+	docker compose build file-service
 
 test-results:
 	mkdir -p -m 0777 test-results .gocache .trivy-cache
@@ -12,8 +12,8 @@ test-results:
 setup-directories: test-results
 
 scan: setup-directories
-	docker compose run --rm trivy image --format table --exit-code 0 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
-	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file_service:latest
+	docker compose run --rm trivy image --format table --exit-code 0 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest
+	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest
 
 test: setup-directories
 	docker compose run --rm test-runner
