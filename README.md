@@ -36,8 +36,10 @@ Another gotcha... Make sure annotations are written with 2 space tabs in order f
 
 ## Endpoints
 
+The endpoints and their request/response structure are documented in the [Swagger docs](./docs/openapi/openapi.yml)
+
 - `GET /health-check` - returns a 200 status code if the file service is running
-- `POST /zip` - _TODO_ - Creates a new Zip request and stores it in the database. On success it returns a Reference token that can be used in the `GET /zip/{reference}` endpoint to download the zip.
+- `POST /zip/request` - Creates a new Zip request and stores it in the database. On success it returns a Reference token that can be used in the `GET /zip/{reference}` endpoint to download the zip.
 - `GET /zip/{reference}` - Finds a Zip request by Reference and streams a zip of all files associated with the Zip request.
 
 ## Authentication
@@ -48,6 +50,7 @@ All requests (except for `health-check` endpoint) are passed through a JWT authe
 - JWT token is valid
 - JWT token is not expired
 - JWT token is signed with the correct key (`JWT_SECRET` ENV var) using the correct signature method (HMAC-SHA by default)
+- JWT token has a `session-data` claim
 
 The middleware will also create a SHA-256 hash of the `session-data` value from the JWT payload, which usually contains an email address. This hash is stored with all Zip requests and is subsequently used for verifying that the user downloading a zip is the same user that created the Zip request in the first place. The salt for this hash is defined in `USER_HASH_SALT` ENV var.
 
