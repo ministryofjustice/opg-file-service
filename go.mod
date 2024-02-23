@@ -1,6 +1,8 @@
 module opg-file-service
 
-go 1.19
+go 1.22
+
+toolchain go1.22.0
 
 require (
 	github.com/aws/aws-sdk-go v1.50.20
@@ -8,7 +10,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/gorilla/mux v1.8.1
-	github.com/ministryofjustice/opg-go-common v0.0.0-20231128145056-24628fba649c
+	github.com/ministryofjustice/opg-go-common v0.0.0-20240223111039-066f4e682b9b
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
