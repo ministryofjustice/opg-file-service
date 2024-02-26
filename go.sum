@@ -63,6 +63,8 @@ github.com/aws/aws-sdk-go v1.50.19 h1:YSIDKRSkh/TW0RPWoocdLqtC/T5W6IGBVhFs6P7Qca
 github.com/aws/aws-sdk-go v1.50.19/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/aws/aws-sdk-go v1.50.20 h1:xfAnSDVf/azIWTVQXQODp89bubvCS85r70O3nuQ4dnE=
 github.com/aws/aws-sdk-go v1.50.20/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
+github.com/aws/aws-sdk-go v1.50.24 h1:3o2Pg7mOoVL0jv54vWtuafoZqAeEXLhm1tltWA2GcEw=
+github.com/aws/aws-sdk-go v1.50.24/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/aws/aws-secretsmanager-caching-go v1.1.0 h1:vcV94XGJ9KouXKYBTMqgrBw96Tae8JKLmoUZ5SbaXNo=
 github.com/aws/aws-secretsmanager-caching-go v1.1.0/go.mod h1:wahQpJP1dZKMqjGFAjGCqilHkTlN0zReGWocPLbXmxg=
 github.com/aws/aws-secretsmanager-caching-go v1.1.2 h1:tY3pRhAkaohm75KFpGHoqjWrnRpznqrc8iX/wTLVpH0=
