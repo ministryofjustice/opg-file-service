@@ -5,13 +5,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"opg-file-service/internal"
-	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/ministryofjustice/opg-go-common/logging"
 )
 
 type HashedEmail struct{}
@@ -20,14 +19,13 @@ type Cacheable interface {
 	GetSecretString(key string) (string, error)
 }
 
-func JwtVerify(secretsCache Cacheable) func(next http.Handler) http.Handler {
-	l := logging.New(os.Stdout, "opg-file-service")
+func JwtVerify(l *slog.Logger, secretsCache Cacheable) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			jwtSecret, jwtErr := secretsCache.GetSecretString("jwt-key")
 
 			if jwtErr != nil {
-				l.Print("Error in fetching JWT secret from cache:", jwtErr.Error())
+				l.Error("Error in fetching JWT secret from cache", slog.Any("err", jwtErr.Error()))
 				internal.WriteJSONError(rw, "missing_secret_key", jwtErr.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -61,12 +59,12 @@ func JwtVerify(secretsCache Cacheable) func(next http.Handler) http.Handler {
 				e := claims["session-data"].(string)
 				salt, saltErr := secretsCache.GetSecretString("user-hash-salt")
 				if saltErr != nil {
-					l.Print("Error in fetching hash salt from cache:", saltErr.Error())
+					l.Error("Error in fetching hash salt from cache:", slog.Any("err", saltErr.Error()))
 					internal.WriteJSONError(rw, "missing_secret_salt", saltErr.Error(), http.StatusInternalServerError)
 					return
 				}
 				he := hashEmail(e, salt)
-				l.Print("JWT Token is valid for user ", he)
+				l.Info("JWT Token is valid for user " + he)
 
 				ctx := context.WithValue(r.Context(), HashedEmail{}, he)
 				next.ServeHTTP(rw, r.WithContext(ctx))

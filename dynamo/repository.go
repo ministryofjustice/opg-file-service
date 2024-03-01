@@ -2,6 +2,7 @@ package dynamo
 
 import (
 	"errors"
+	"log/slog"
 	"opg-file-service/internal"
 	"opg-file-service/session"
 	"opg-file-service/storage"
@@ -10,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/ministryofjustice/opg-go-common/logging"
 )
 
 type RepositoryInterface interface {
@@ -21,11 +21,11 @@ type RepositoryInterface interface {
 
 type Repository struct {
 	db     DBClient
-	logger *logging.Logger
+	logger *slog.Logger
 	table  string
 }
 
-func NewRepository(sess session.Session, l *logging.Logger) *Repository {
+func NewRepository(sess session.Session, l *slog.Logger) *Repository {
 	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
 	sess.AwsSession.Config.Endpoint = &endpoint
 
@@ -50,7 +50,7 @@ func (repo Repository) Get(ref string) (*storage.Entry, error) {
 		},
 	})
 	if err != nil {
-		repo.logger.Print(err.Error())
+		repo.logger.Error(err.Error())
 		return nil, notFound
 	}
 
@@ -58,12 +58,12 @@ func (repo Repository) Get(ref string) (*storage.Entry, error) {
 
 	err = dynamodbattribute.UnmarshalMap(result.Item, &entry)
 	if err != nil {
-		repo.logger.Print("Failed to unmarshal Record, ", err)
+		repo.logger.Info("Failed to unmarshal Record, ", slog.Any("err", err.Error()))
 		return nil, notFound
 	}
 
 	if entry.Ref == "" {
-		repo.logger.Print("Ref token " + ref + " has expired or does not exist.")
+		repo.logger.Info("Ref token " + ref + " has expired or does not exist.")
 		return nil, notFound
 	}
 

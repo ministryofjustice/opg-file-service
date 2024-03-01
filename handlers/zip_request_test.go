@@ -9,18 +9,16 @@ import (
 	"opg-file-service/dynamo"
 	"opg-file-service/middleware"
 	"opg-file-service/storage"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-go-common/logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestNewZipRequestHandler(t *testing.T) {
-	l := logging.New(os.Stdout, "opg-file-service-test")
+	_, l := newTestLogger()
 	zrh, err := NewZipRequestHandler(l)
 	assert.Nil(t, err)
 	assert.IsType(t, ZipRequestHandler{}, *zrh)
@@ -96,7 +94,7 @@ func TestZipRequestHandler_ServeHTTP(t *testing.T) {
 	}
 	for _, test := range tests {
 		mr := new(MockRepository)
-		l := logging.New(os.Stdout, "opg-file-service-test")
+		_, l := newTestLogger()
 
 		zh := ZipRequestHandler{
 			repo:   mr,
