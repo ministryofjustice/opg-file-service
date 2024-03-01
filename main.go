@@ -2,20 +2,20 @@
 //
 // Documentation for creating a file request and downloading files using the API
 //
-//   Schemes: http, https
-//   BasePath: /
-//   Version: 1.0.0
-//   securityDefinitions:
-//     Bearer:
-//       type: apiKey
-//       name: Authorization
-//       in: header
+//	  Schemes: http, https
+//	  BasePath: /
+//	  Version: 1.0.0
+//	  securityDefinitions:
+//	    Bearer:
+//	      type: apiKey
+//	      name: Authorization
+//	      in: header
 //
-//   Consumes:
-// 	  - application/json
+//	  Consumes:
+//		  - application/json
 //
-//   Produces:
-//    - application/json
+//	  Produces:
+//	   - application/json
 //
 // swagger:meta
 package main
@@ -23,6 +23,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"opg-file-service/cache"
 	"opg-file-service/handlers"
@@ -32,18 +33,37 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-go-common/logging"
+	"github.com/ministryofjustice/opg-go-common/env"
+	"github.com/ministryofjustice/opg-go-common/telemetry"
 	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 
 func main() {
-	healthcheck.Register("http://localhost:8000" + os.Getenv("PATH_PREFIX") + "/health-check")
+	ctx := context.Background()
+	logger := telemetry.NewLogger("opg-file-service")
 
-	// Create a Logger
-	l := logging.New(os.Stdout, "opg-file-service")
+	if err := run(ctx, logger); err != nil {
+		logger.Error("fatal startup error", slog.Any("err", err.Error()))
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context, l *slog.Logger) error {
+	pathPrefix := os.Getenv("PATH_PREFIX")
+	exportTraces := env.Get("TRACING_ENABLED", "0") == "1"
+
+	shutdown, err := telemetry.StartTracerProvider(ctx, l, exportTraces)
+	defer shutdown()
+	if err != nil {
+		return err
+	}
+
+	healthcheck.Register("http://localhost:8000" + pathPrefix + "/health-check")
 
 	// Create new serveMux
-	sm := mux.NewRouter().PathPrefix(os.Getenv("PATH_PREFIX")).Subrouter()
+	sm := mux.NewRouter().PathPrefix(pathPrefix).Subrouter()
+
+	sm.Use(telemetry.Middleware(l))
 
 	// swagger:operation GET /health-check check health-check
 	// Register the health check handler
@@ -61,9 +81,9 @@ func main() {
 
 	// Create a sub-router for protected handlers
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.Use(middleware.JwtVerify(secretsCache))
+	getRouter.Use(middleware.JwtVerify(l, secretsCache))
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
-	postRouter.Use(middleware.JwtVerify(secretsCache))
+	postRouter.Use(middleware.JwtVerify(l, secretsCache))
 
 	// swagger:operation POST /zip/request zip request
 	// Makes a request for a set of files to be downloaded from S3
@@ -105,7 +125,7 @@ func main() {
 	//     description: Unexpected error occurred
 	zrh, err := handlers.NewZipRequestHandler(l)
 	if err != nil {
-		l.Fatal(err)
+		return err
 	}
 	postRouter.Handle("/zip/request", zrh)
 
@@ -136,7 +156,7 @@ func main() {
 	//     description: Unexpected error occurred
 	zh, err := handlers.NewZipHandler(l)
 	if err != nil {
-		l.Fatal(err)
+		return err
 	}
 	getRouter.Handle("/zip/{reference}", zh)
 
@@ -155,7 +175,8 @@ func main() {
 	go func() {
 		err := s.ListenAndServe()
 		if err != nil {
-			l.Fatal(err)
+			l.Error("listen and serve error", slog.Any("err", err.Error()))
+			os.Exit(1)
 		}
 	}()
 
@@ -164,8 +185,8 @@ func main() {
 	signal.Notify(c, os.Interrupt, os.Kill)
 
 	sig := <-c
-	l.Print("Received terminate, graceful shutdown", sig)
+	l.Info("Received terminate, graceful shutdown", sig)
 
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	s.Shutdown(tc)
+	return s.Shutdown(tc)
 }

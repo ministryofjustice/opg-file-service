@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"bytes"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -97,10 +99,13 @@ func TestJwtVerify(t *testing.T) {
 
 			rw := httptest.NewRecorder()
 
+			var buf bytes.Buffer
+			l := slog.New(slog.NewJSONHandler(&buf, nil))
+
 			mockCache := new(mockSecretsCache)
 			mockCache.On("GetSecretString", "jwt-key").Return(test.secret.v, test.secret.e)
 			mockCache.On("GetSecretString", "user-hash-salt").Return(test.salt.v, test.salt.e)
-			handler := JwtVerify(mockCache)(testHandler)
+			handler := JwtVerify(l, mockCache)(testHandler)
 			handler.ServeHTTP(rw, req)
 			res := rw.Result()
 

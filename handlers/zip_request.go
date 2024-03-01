@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"opg-file-service/dynamo"
 	"opg-file-service/internal"
@@ -11,7 +12,6 @@ import (
 	"opg-file-service/storage"
 	"time"
 
-	"github.com/ministryofjustice/opg-go-common/logging"
 	"github.com/rs/xid"
 )
 
@@ -21,14 +21,14 @@ type ZipRequestResponseBody struct {
 
 type ZipRequestHandler struct {
 	repo   dynamo.RepositoryInterface
-	logger *logging.Logger
+	logger *slog.Logger
 }
 
-func NewZipRequestHandler(logger *logging.Logger) (*ZipRequestHandler, error) {
+func NewZipRequestHandler(logger *slog.Logger) (*ZipRequestHandler, error) {
 	// create a new AWS session
 	sess, err := session.NewSession()
 	if err != nil {
-		logger.Print(err.Error())
+		logger.Error("unable to create a new session", slog.Any("err", err))
 		return nil, errors.New("unable to create a new session")
 	}
 
@@ -48,7 +48,7 @@ func (zrh *ZipRequestHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 
 	err := d.Decode(entry)
 	if err != nil {
-		zrh.logger.Print(err.Error())
+		zrh.logger.Info(err.Error())
 		internal.WriteJSONError(rw, "request", "Invalid JSON request.", http.StatusBadRequest)
 		return
 	}
@@ -63,24 +63,24 @@ func (zrh *ZipRequestHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 	entry.Hash = r.Context().Value(middleware.HashedEmail{}).(string)
 
 	if ok, err := entry.Validate(); !ok {
-		zrh.logger.Request(r, err)
+		zrh.logger.Error(err.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		if err := json.NewEncoder(rw).Encode(err); err != nil {
-			zrh.logger.Print("Unable to write JSON error to response:", err)
+			zrh.logger.Info("Unable to write JSON error to response:", err)
 		}
 		return
 	}
 
 	err = zrh.repo.Add(entry)
 	if err != nil {
-		zrh.logger.Request(r, err)
+		zrh.logger.Error(err.Error())
 		internal.WriteJSONError(rw, "request", "Unable to save the zip request.", http.StatusInternalServerError)
 		return
 	}
 
 	jsonResp, err := json.Marshal(ZipRequestResponseBody{Link: "/zip/" + entry.Ref})
 	if err != nil {
-		zrh.logger.Request(r, err)
+		zrh.logger.Error(err.Error())
 		internal.WriteJSONError(rw, "request", "Unable to encode response object to JSON.", http.StatusInternalServerError)
 		return
 	}
@@ -88,8 +88,8 @@ func (zrh *ZipRequestHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 	rw.WriteHeader(http.StatusCreated)
 	_, err = rw.Write(jsonResp)
 	if err != nil {
-		zrh.logger.Request(r, err)
+		zrh.logger.Error(err.Error())
 	}
 
-	zrh.logger.Print("Request took: ", time.Since(start))
+	zrh.logger.Info("Request took: " + time.Since(start).String())
 }

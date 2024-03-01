@@ -3,6 +3,7 @@ package dynamo
 import (
 	"bytes"
 	"errors"
+	"log/slog"
 	"opg-file-service/session"
 	"opg-file-service/storage"
 	"os"
@@ -11,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/ministryofjustice/opg-go-common/logging"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,8 +45,8 @@ func TestNewRepository(t *testing.T) {
 
 	for _, test := range tests {
 		sess, _ := session.NewSession()
-		buf := new(bytes.Buffer)
-		l := logging.New(buf, "opg-file-service-test")
+		var buf bytes.Buffer
+		l := slog.New(slog.NewJSONHandler(&buf, nil))
 
 		os.Unsetenv("AWS_DYNAMODB_ENDPOINT")
 		os.Unsetenv("AWS_DYNAMODB_TABLE_NAME")
@@ -153,8 +153,8 @@ func TestRepository_Get(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		buf := new(bytes.Buffer)
-		l := logging.New(buf, "opg-file-service-test")
+		var buf bytes.Buffer
+		l := slog.New(slog.NewJSONHandler(&buf, nil))
 		mdb := MockDynamoDB{}
 
 		repo := Repository{
@@ -212,9 +212,10 @@ func TestRepository_Delete(t *testing.T) {
 	for _, test := range tests {
 		mdb := MockDynamoDB{}
 
+		var buf bytes.Buffer
 		repo := Repository{
 			db:     &mdb,
-			logger: &logging.Logger{},
+			logger: slog.New(slog.NewJSONHandler(&buf, nil)),
 			table:  "table",
 		}
 
@@ -270,9 +271,10 @@ func TestRepository_Add(t *testing.T) {
 	for _, test := range tests {
 		mdb := MockDynamoDB{}
 
+		var buf bytes.Buffer
 		repo := Repository{
 			db:     &mdb,
-			logger: &logging.Logger{},
+			logger: slog.New(slog.NewJSONHandler(&buf, nil)),
 			table:  "table",
 		}
 
