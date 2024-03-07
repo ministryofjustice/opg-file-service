@@ -4,23 +4,29 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"opg-file-service/dynamo"
 	"opg-file-service/middleware"
 	"opg-file-service/storage"
 	"opg-file-service/zipper"
-	"os"
 	"testing"
 
 	"github.com/gorilla/mux"
-	"github.com/ministryofjustice/opg-go-common/logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
+func newTestLogger() (*bytes.Buffer, *slog.Logger) {
+	var buf bytes.Buffer
+	l := slog.New(slog.NewJSONHandler(&buf, nil))
+
+	return &buf, l
+}
+
 func TestNewZipHandler(t *testing.T) {
-	l := logging.New(os.Stdout, "opg-file-service-test")
+	_, l := newTestLogger()
 	zh, err := NewZipHandler(l)
 	assert.Nil(t, err)
 	assert.IsType(t, ZipHandler{}, *zh)
@@ -126,7 +132,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			nil,
 			403,
 			[]string{
-				"Access denied for user: user",
+				"Access denied for user",
 			},
 		},
 		{
@@ -236,8 +242,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 	for _, test := range tests {
 		mr := new(MockRepository)
 		mz := new(MockZipper)
-		buf := new(bytes.Buffer)
-		l := logging.New(buf, "opg-file-service-test")
+		logBuf, l := newTestLogger()
 
 		zh := ZipHandler{
 			repo:   mr,
@@ -270,7 +275,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 		res := rr.Result()
 
 		for _, ls := range test.wantInLog {
-			assert.Contains(t, buf.String(), ls, test.scenario)
+			assert.Contains(t, logBuf.String(), ls, test.scenario)
 		}
 
 		assert.Equal(t, test.wantCode, res.StatusCode, test.scenario)
