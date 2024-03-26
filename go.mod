@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-secretsmanager-caching-go v1.1.3
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.1
-	github.com/ministryofjustice/opg-go-common v0.0.0-20240227144553-d506200e53d5
+	github.com/ministryofjustice/opg-go-common v0.0.0-20240326094508-d16a21564abf
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
