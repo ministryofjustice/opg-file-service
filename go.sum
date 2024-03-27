@@ -51,6 +51,8 @@ github.com/ministryofjustice/opg-go-common v0.0.0-20240227144553-d506200e53d5 h1
 github.com/ministryofjustice/opg-go-common v0.0.0-20240227144553-d506200e53d5/go.mod h1:zwxromuoYZxDwvvBy6NDhdyw3AZnAeq3dXZ647fNVf4=
 github.com/ministryofjustice/opg-go-common v0.0.0-20240326094508-d16a21564abf h1:tlHgih+++/6OaeZSXZ8WQctnqQ7G2z2Lv1f8Zg7s7oE=
 github.com/ministryofjustice/opg-go-common v0.0.0-20240326094508-d16a21564abf/go.mod h1:LdytY8+QWEgpgrr4uGAFn4q4RqODCaRA3tQ9tx8WM5o=
+github.com/ministryofjustice/opg-go-common v0.0.0-20240327113448-b9fa41e2a2f9 h1:ASb8EpOUFBvUoKgd0z3X1asi9ewieTrlN0hB0G8p6uw=
+github.com/ministryofjustice/opg-go-common v0.0.0-20240327113448-b9fa41e2a2f9/go.mod h1:GwdjLkhiHZVmXy2e821+qbyecZpbG8aEuoptZIVq3SA=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0 h1:MHKgp78y85hSH7xnciNp3DCu8naeNAtUx5r7s/Q9mzk=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0/go.mod h1:Xc+DW9mL8o34oBadko+6sdrpu62G1tuKbjedy5vFnX4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -145,6 +147,8 @@ google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 h1:
 google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80/go.mod h1:PAREbraiVEVGVdTZsVWjSbbTtSyGbAgIIvni8a8CD5s=
 google.golang.org/grpc v1.62.0 h1:HQKZ/fa1bXkX1oFOvSjmZEUL8wLSaZTjCcLAlmZRtdk=
 google.golang.org/grpc v1.62.0/go.mod h1:IWTG0VlJLCh1SkC58F7np9ka9mx/WNkjl4PGJaiq+QE=
+google.golang.org/grpc v1.62.1 h1:B4n+nfKzOICUXMgyrNd19h/I9oH0L1pizfk1d4zSgTk=
+google.golang.org/grpc v1.62.1/go.mod h1:IWTG0VlJLCh1SkC58F7np9ka9mx/WNkjl4PGJaiq+QE=
 google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
 google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
 google.golang.org/protobuf v1.32.0 h1:pPC6BG5ex8PDFnkbrGU3EixyhKcQ2aDuBS36lqK/C7I=

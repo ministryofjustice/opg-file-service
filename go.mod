@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-secretsmanager-caching-go v1.1.3
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.1
-	github.com/ministryofjustice/opg-go-common v0.0.0-20240326094508-d16a21564abf
+	github.com/ministryofjustice/opg-go-common v0.0.0-20240327113448-b9fa41e2a2f9
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
@@ -40,7 +40,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240123012728-ef4313101c80 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
-	google.golang.org/grpc v1.62.0 // indirect
+	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
