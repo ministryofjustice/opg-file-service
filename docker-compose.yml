@@ -12,7 +12,7 @@ services:
       - docker-compose.env
 
   localstack:
-    image: localstack/localstack:3.2.0
+    image: localstack/localstack:3.3.0
     environment:
       AWS_DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
