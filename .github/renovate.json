@@ -25,6 +25,7 @@
                 "patch"
             ],
             "prPriority": 1,
+            "schedule": "* 6 1 * *",
             "stabilityDays": 3
         }
     ],
