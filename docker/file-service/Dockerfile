@@ -17,7 +17,7 @@ RUN apk --update --no-cache add \
     ca-certificates \
     tzdata \
     && rm -rf /var/cache/apk/*
-RUN apk --no-cache upgrade libcrypto3 libssl3
+RUN apk --no-cache upgrade busybox libcrypto3 libssl3
 
 COPY --from=build-env /go/bin/zipper /go/bin/zipper
 
