@@ -3,6 +3,8 @@ github.com/aws/aws-sdk-go v1.54.11 h1:Zxuv/R+IVS0B66yz4uezhxH9FN9/G2nbxejYqAMFjx
 github.com/aws/aws-sdk-go v1.54.11/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQHfHkpNU=
 github.com/aws/aws-sdk-go v1.54.16 h1:+B9zGaVwOUU6AO9Sy99VjTMDPthWx10HjB08hjaBHIc=
 github.com/aws/aws-sdk-go v1.54.16/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQHfHkpNU=
+github.com/aws/aws-sdk-go v1.54.18 h1:t8DGtN8A2wEiazoJxeDbfPsbxCKtjoRLuO7jBSgJzo4=
+github.com/aws/aws-sdk-go v1.54.18/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQHfHkpNU=
 github.com/aws/aws-secretsmanager-caching-go v1.2.0 h1:gUA+CVKvFLj4OUSknhIrnt4dF7Y37+JrChKqfaehJME=
 github.com/aws/aws-secretsmanager-caching-go v1.2.0/go.mod h1:6t2/zQIsigFMlnpOdGj503Dgaz24tMqIRhass9uoTBo=
 github.com/aws/aws-secretsmanager-caching-go/v2 v2.0.2/go.mod h1:yFYS1EN93oP/Y+0tmUQX3xQXROeqYU1edOFgBtpMbIE=
@@ -42,6 +44,8 @@ github.com/ministryofjustice/opg-go-common v1.4.0 h1:UjtBKWFX/MxWOk3cuUxvjM5qSxU
 github.com/ministryofjustice/opg-go-common v1.4.0/go.mod h1:uz6eLy9zp095mnWzBUbwzYjoaoHdCvTmowVC6IZ0Jxg=
 github.com/ministryofjustice/opg-go-common v1.7.0 h1:bD7uzYmmaLB7FbOSzw9d9nBZVtWEXwOeuB39l1vyxvI=
 github.com/ministryofjustice/opg-go-common v1.7.0/go.mod h1:qqspbBfGAq7A5tvl8mPQwWhlYw2FJWT0EkIGo9kHuYw=
+github.com/ministryofjustice/opg-go-common v1.8.0 h1:Uj+ALL/ZuNsG4tmf2fhlNJ1b6BKxBFWD0L/TG9/IhRE=
+github.com/ministryofjustice/opg-go-common v1.8.0/go.mod h1:qqspbBfGAq7A5tvl8mPQwWhlYw2FJWT0EkIGo9kHuYw=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0 h1:MHKgp78y85hSH7xnciNp3DCu8naeNAtUx5r7s/Q9mzk=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0/go.mod h1:Xc+DW9mL8o34oBadko+6sdrpu62G1tuKbjedy5vFnX4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
