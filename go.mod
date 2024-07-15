@@ -5,12 +5,12 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	github.com/aws/aws-sdk-go v1.54.16
+	github.com/aws/aws-sdk-go v1.54.18
 	github.com/aws/aws-secretsmanager-caching-go v1.2.0
 	github.com/aws/aws-secretsmanager-caching-go/v2 v2.0.2
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.1
-	github.com/ministryofjustice/opg-go-common v1.7.0
+	github.com/ministryofjustice/opg-go-common v1.8.0
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
