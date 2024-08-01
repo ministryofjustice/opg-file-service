@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	github.com/aws/aws-sdk-go v1.54.18
+	github.com/aws/aws-sdk-go v1.55.3
 	github.com/aws/aws-secretsmanager-caching-go v1.2.0
 	github.com/aws/aws-secretsmanager-caching-go/v2 v2.0.2
 	github.com/golang-jwt/jwt/v4 v4.5.0
