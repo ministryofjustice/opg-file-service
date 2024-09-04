@@ -185,7 +185,7 @@ func run(ctx context.Context, l *slog.Logger) error {
 	signal.Notify(c, os.Interrupt, os.Kill)
 
 	sig := <-c
-	l.Info("Received terminate, graceful shutdown", sig)
+	l.Info("Received terminate, graceful shutdown", "sig", sig)
 
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	return s.Shutdown(tc)
