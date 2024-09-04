@@ -66,7 +66,7 @@ func (zrh *ZipRequestHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 		zrh.logger.Error(err.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		if err := json.NewEncoder(rw).Encode(err); err != nil {
-			zrh.logger.Info("Unable to write JSON error to response:", err)
+			zrh.logger.Info("Unable to write JSON error to response:", "err", err)
 		}
 		return
 	}
