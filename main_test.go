@@ -162,18 +162,18 @@ func (suite *EndToEndTestSuite) TestZip() {
 	if err != nil {
 		suite.Fail("", err)
 	}
-	err = ioutil.WriteFile("test.zip", bodyBytes, 0644)
+	err = ioutil.WriteFile("/tmp/test.zip", bodyBytes, 0644)
 	if err != nil {
 		suite.Fail("", err)
 	}
 
 	// extract archive and make assertions
-	rc, err := zip.OpenReader("test.zip")
+	rc, err := zip.OpenReader("/tmp/test.zip")
 	if err != nil {
 		suite.Fail("", err)
 	}
 	defer rc.Close()
-	defer os.Remove("test.zip")
+	defer os.Remove("/tmp/test.zip")
 
 	want := make(map[string]string)
 	got := make(map[string]string)
