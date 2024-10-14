@@ -51,15 +51,6 @@ jobs:
       - name: Build Container
         run: make build
 
-      - name: Trivy Image Vulnerability Scanner
-        run: make scan
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'test-results/trivy.sarif'
-
       - name: Bump version
         id: bump_version
         uses: anothrNick/github-tag-action@1.71.0
@@ -87,6 +78,20 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         with:
           registries: 311462405659
+
+      - name: Trivy Image Vulnerability Scanner
+        env:
+          TRIVY_DB_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
+          DOCKER_USERNAME: ${{ steps.login-ecr.outputs.docker_username_311462405659_dkr_ecr_eu_west_1_amazonaws_com }}
+          DOCKER_PASSWORD: ${{ steps.login-ecr.outputs.docker_password_311462405659_dkr_ecr_eu_west_1_amazonaws_com }}
+        run: make scan
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'test-results/trivy.sarif'
 
       - name: Push Container
         run: |
