@@ -2,7 +2,7 @@ module opg-file-service
 
 go 1.22
 
-toolchain go1.23.2
+toolchain go1.23.3
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
