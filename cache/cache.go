@@ -10,10 +10,10 @@ import (
 
 type SecretsCache struct {
 	env   string
-	cache AwsSecretsCache
+	cache awsSecretsCache
 }
 
-type AwsSecretsCache interface {
+type awsSecretsCache interface {
 	GetSecretString(secretId string) (string, error)
 }
 
