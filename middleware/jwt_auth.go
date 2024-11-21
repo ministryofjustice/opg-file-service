@@ -15,11 +15,11 @@ import (
 
 type HashedEmail struct{}
 
-type Cacheable interface {
+type cacheable interface {
 	GetSecretString(key string) (string, error)
 }
 
-func JwtVerify(l *slog.Logger, secretsCache Cacheable) func(next http.Handler) http.Handler {
+func JwtVerify(l *slog.Logger, secretsCache cacheable) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			jwtSecret, jwtErr := secretsCache.GetSecretString("jwt-key")
