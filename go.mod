@@ -2,18 +2,18 @@ module opg-file-service
 
 go 1.22.7
 
-toolchain go1.23.3
+toolchain go1.23.4
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/aws/aws-secretsmanager-caching-go v1.2.0
-	github.com/aws/aws-secretsmanager-caching-go/v2 v2.0.2
+	github.com/aws/aws-secretsmanager-caching-go/v2 v2.1.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/gorilla/mux v1.8.1
-	github.com/ministryofjustice/opg-go-common v1.34.0
+	github.com/ministryofjustice/opg-go-common v1.38.0
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.6.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
