@@ -12,6 +12,7 @@ github.com/aws/aws-sdk-go v1.55.5/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQ
 github.com/aws/aws-secretsmanager-caching-go v1.2.0 h1:gUA+CVKvFLj4OUSknhIrnt4dF7Y37+JrChKqfaehJME=
 github.com/aws/aws-secretsmanager-caching-go v1.2.0/go.mod h1:6t2/zQIsigFMlnpOdGj503Dgaz24tMqIRhass9uoTBo=
 github.com/aws/aws-secretsmanager-caching-go/v2 v2.0.2/go.mod h1:yFYS1EN93oP/Y+0tmUQX3xQXROeqYU1edOFgBtpMbIE=
+github.com/aws/aws-secretsmanager-caching-go/v2 v2.1.0/go.mod h1:6JsBUHrMc1eO8YTMQ1ujHPB/ffNm5tu38AikGkqHQZ8=
 github.com/brunoscheufler/aws-ecs-metadata-go v0.0.0-20221221133751-67e37ae746cd h1:C0dfBzAdNMqxokqWUysk2KTJSMmqvh9cNW1opdy5+0Q=
 github.com/brunoscheufler/aws-ecs-metadata-go v0.0.0-20221221133751-67e37ae746cd/go.mod h1:CeKhh8xSs3WZAc50xABMxu+FlfAAd5PNumo7NfOv7EE=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
@@ -64,6 +65,8 @@ github.com/ministryofjustice/opg-go-common v1.31.0 h1:BhiUkVVns5EmHgcrf2080272f1
 github.com/ministryofjustice/opg-go-common v1.31.0/go.mod h1:ChMNWq0LXn5CexlllRmuMxiWlCcIB0+msrPNJ8mXktQ=
 github.com/ministryofjustice/opg-go-common v1.34.0 h1:z/GVe5McNwl0qhRuM6mUm4nlG4H+Ed9cMw/WveA1U4E=
 github.com/ministryofjustice/opg-go-common v1.34.0/go.mod h1:pHtsj+7zCtw+vJm9nFvtY9gT/SsVNouQJYz33JRlibE=
+github.com/ministryofjustice/opg-go-common v1.39.0 h1:iS38QtDWv8aKQr6yF5xU/nkzVP8yriVebJWNQgR2UE4=
+github.com/ministryofjustice/opg-go-common v1.39.0/go.mod h1:ChMNWq0LXn5CexlllRmuMxiWlCcIB0+msrPNJ8mXktQ=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0 h1:MHKgp78y85hSH7xnciNp3DCu8naeNAtUx5r7s/Q9mzk=
 github.com/ministryofjustice/opg-go-healthcheck v1.1.0/go.mod h1:Xc+DW9mL8o34oBadko+6sdrpu62G1tuKbjedy5vFnX4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -82,6 +85,8 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
+github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.27.0 h1:3VwT2JwYqorDQZS5CGnKD5OAQ6iTlD7kgDZV9vUXR9o=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.27.0/go.mod h1:uqNiuQtZU5YjW2mu58xptApZaxxDJefKrSd+QaAMoWw=
