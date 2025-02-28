@@ -48,9 +48,6 @@ jobs:
         id: extract_branch
       - uses: unfor19/install-aws-cli-action@v1
 
-      - name: Build Container
-        run: make build
-
       - name: Bump version
         id: bump_version
         uses: anothrNick/github-tag-action@1.71.0
@@ -62,6 +59,15 @@ jobs:
           PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
           RELEASE_BRANCHES: main
           WITH_V: true
+
+      - name: Set up Docker
+        run: |
+          echo '{"experimental": true, "features": { "containerd-snapshotter": true }}' | sudo tee -a /etc/docker/daemon.json
+          sudo systemctl restart docker
+          docker run --privileged --rm tonistiigi/binfmt --install all
+
+      - name: Build Container
+        run: make build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
