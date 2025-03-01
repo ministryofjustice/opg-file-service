@@ -1,4 +1,4 @@
-FROM golang:1.23.5-alpine
+FROM golang:1.24.0-alpine
 
 RUN go install gotest.tools/gotestsum@latest \
   && addgroup -S app && adduser -S -g app app
