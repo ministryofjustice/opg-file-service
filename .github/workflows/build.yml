@@ -30,9 +30,17 @@ jobs:
           files: test-results/unit-tests.xml
 
   build:
-    name: "Build & Push Containers"
+    name: Build Image
+    needs: [test]
+    uses: ministryofjustice/opg-github-workflows/.github/workflows/build-multi-architecture-image.yml@v3.10.0
+    with:
+      image_name: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service
+      build_options: --file docker/file-service/Dockerfile
+
+  push:
+    name: "Push Image"
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, build]
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
       tag: ${{ steps.bump_version.outputs.tag }}
@@ -66,8 +74,13 @@ jobs:
           sudo systemctl restart docker
           docker run --privileged --rm tonistiigi/binfmt --install all
 
-      - name: Build Container
-        run: make build
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/images
+          name: multi-arch-image
+      - name: Load Image
+        run: |
+          docker load -i /tmp/images/multi-arch-image.tar
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -99,7 +112,7 @@ jobs:
         with:
           sarif_file: 'test-results/trivy.sarif'
 
-      - name: Push Container
+      - name: Tag & Push
         run: |
           docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:${{ steps.bump_version.outputs.tag }}
           if [ "$BRANCH_NAME" == "main" ]; then
@@ -113,7 +126,7 @@ jobs:
 
   push-tags:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, push]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
@@ -134,7 +147,7 @@ jobs:
 
       - name: Push Tag to Parameter Store
         run: |
-          aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "${{ needs.build.outputs.tag}}" --overwrite --region=eu-west-1
+          aws ssm put-parameter --name "opg-file-service-latest-green-build" --type "String" --value "${{ needs.push.outputs.tag}}" --overwrite --region=eu-west-1
 
       - name: Trigger Dev Deploy
         shell: bash
