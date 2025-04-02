@@ -18,12 +18,12 @@ jobs:
     name: "Test File Service"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Run Unit and Integration Tests
         run: make test
 
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2.19.0
         if: always()
         with:
           check_name: "Unit Test Results"
@@ -45,7 +45,7 @@ jobs:
       branch: ${{ steps.set-outputs.outputs.branch }}
       tag: ${{ steps.bump_version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Extract branch name
         run: |
           if [ "${{ github.head_ref }}" == "" ]; then
@@ -54,7 +54,7 @@ jobs:
             echo BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/\//-/g') >> $GITHUB_ENV
           fi
         id: extract_branch
-      - uses: unfor19/install-aws-cli-action@v1
+      - uses: unfor19/install-aws-cli-action@v1.0.7
 
       - name: Bump version
         id: bump_version
@@ -74,7 +74,7 @@ jobs:
           sudo systemctl restart docker
           docker run --privileged --rm tonistiigi/binfmt --install all
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4.2.1
         with:
           path: /tmp/images
           name: multi-arch-image
@@ -83,7 +83,7 @@ jobs:
           docker load -i /tmp/images/multi-arch-image.tar
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
@@ -94,7 +94,7 @@ jobs:
 
       - name: ECR Login
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@v2.0.1
         with:
           registries: 311462405659
 
@@ -107,7 +107,7 @@ jobs:
         run: make scan
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3.28.13
         if: always()
         with:
           sarif_file: 'test-results/trivy.sarif'
@@ -129,10 +129,10 @@ jobs:
     needs: [build, push]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
@@ -143,7 +143,7 @@ jobs:
 
       - name: Install AWS CLI
         id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1
+        uses: unfor19/install-aws-cli-action@v1.0.7
 
       - name: Push Tag to Parameter Store
         run: |
