@@ -18,16 +18,16 @@
             "automerge": true,
             "groupName": "Patch & Minor Updates",
             "groupSlug": "all-minor-patch-updates",
-            "matchPackagePatterns": [
-                "*"
-            ],
             "matchUpdateTypes": [
                 "minor",
                 "patch"
             ],
             "prPriority": 1,
             "schedule": "* 0-6 1 * *",
-            "stabilityDays": 3
+            "minimumReleaseAge": "3 days",
+            "matchPackageNames": [
+                "*"
+            ]
         }
     ],
     "major": {
@@ -39,7 +39,7 @@
     "vulnerabilityAlerts": {
         "groupName": "Vulnerability Patches",
         "dependencyDashboardApproval": false,
-        "stabilityDays": 0,
+        "minimumReleaseAge": null,
         "rangeStrategy": "update-lockfile",
         "commitMessagePrefix": "[SECURITY]",
         "branchTopic": "{{{datasource}}}-{{{depName}}}-vulnerability",
