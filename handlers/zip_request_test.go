@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -101,8 +100,11 @@ func TestZipRequestHandler_ServeHTTP(t *testing.T) {
 			logger: l,
 		}
 
-		sm := mux.NewRouter()
-		sm.Handle("/zip/request", &zh)
+		//sm := mux.NewRouter()
+		//sm.Handle("/zip/request", &zh)
+
+		mux := http.NewServeMux()
+		mux.Handle("GET /zip/{reference}", &zh)
 
 		req, err := http.NewRequest("GET", "/zip/request", strings.NewReader(test.reqBody))
 		if err != nil {
@@ -127,7 +129,7 @@ func TestZipRequestHandler_ServeHTTP(t *testing.T) {
 			mockCall.Return(test.repoAddErr).Times(test.repoAddCalls)
 		}
 
-		sm.ServeHTTP(rr, req.WithContext(ctx))
+		mux.ServeHTTP(rr, req.WithContext(ctx))
 		res := rr.Result()
 		bodyBuf := new(bytes.Buffer)
 		bodyBuf.ReadFrom(res.Body)
