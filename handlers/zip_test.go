@@ -13,7 +13,6 @@ import (
 	"opg-file-service/zipper"
 	"testing"
 
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -250,8 +249,8 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			logger: l,
 		}
 
-		sm := mux.NewRouter()
-		sm.Handle("/zip/{reference}", &zh)
+		mux := http.NewServeMux()
+		mux.Handle("GET /zip/{reference}", &zh)
 
 		req, err := http.NewRequest("GET", "/zip/"+test.ref, nil)
 		if err != nil {
@@ -271,7 +270,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			mz.On("AddFile", mock.AnythingOfType("*storage.File")).Return(test.addFileErr).Times(test.addFileCalls)
 		}
 
-		sm.ServeHTTP(rr, req.WithContext(ctx))
+		mux.ServeHTTP(rr, req.WithContext(ctx))
 		res := rr.Result()
 
 		for _, ls := range test.wantInLog {
