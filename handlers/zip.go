@@ -10,8 +10,6 @@ import (
 	"opg-file-service/session"
 	"opg-file-service/zipper"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 type ZipHandler struct {
@@ -39,8 +37,10 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
 	// Get the reference from the request
-	vars := mux.Vars(r)
-	reference := vars["reference"]
+	//vars := mux.Vars(r)
+	//reference := vars["reference"]
+
+	reference := r.PathValue("reference")
 
 	zh.logger.Info("Zip files for reference: " + reference)
 
