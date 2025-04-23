@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/aws/aws-secretsmanager-caching-go v1.2.0
-	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/gorilla/mux v1.8.1
 	github.com/ministryofjustice/opg-go-common v1.84.0
