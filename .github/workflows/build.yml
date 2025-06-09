@@ -43,7 +43,7 @@ jobs:
     needs: [test, build]
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
-      tag: ${{ steps.bump_version.outputs.tag }}
+      tag: ${{ steps.semver_tag.outputs.created_tag }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Extract branch name
@@ -57,16 +57,11 @@ jobs:
       - uses: unfor19/install-aws-cli-action@e8b481e524a99f37fbd39fdc1dcb3341ab091367 # v1.0.7
 
       - name: Bump version
-        id: bump_version
-        uses: anothrNick/github-tag-action@f278d49d30cdd8775cc3e7dd00b5ee11686ee297 # 1.71.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INITIAL_VERSION: 1.0.0
-          DEFAULT_BUMP: minor
-          PRERELEASE: true
-          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
-          RELEASE_BRANCHES: main
-          WITH_V: true
+        id: semver_tag
+        uses: ministryofjustice/opg-github-actions/.github/actions/semver-tag@c9c5dfb290b8f614df0884928c521165ba83d630 # v3.1.4
+        with:
+          default_bump: minor
+          releases_enabled: false
 
       - name: Set up Docker
         run: |
@@ -114,14 +109,14 @@ jobs:
 
       - name: Tag & Push
         run: |
-          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:${{ steps.bump_version.outputs.tag }}
+          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:${{ steps.semver_tag.outputs.created_tag }}
           if [ "$BRANCH_NAME" == "main" ]; then
             # We want all of the tags pushed
-            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:main-${{ steps.bump_version.outputs.tag }}
-            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:main-${{ steps.bump_version.outputs.tag }}-$(date +"%Y%m%d%H%M%S")
+            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:main-${{ steps.semver_tag.outputs.created_tag }}
+            docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:main-${{ steps.semver_tag.outputs.created_tag }}-$(date +"%Y%m%d%H%M%S")
             docker push --all-tags 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service
           else
-            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:${{ steps.bump_version.outputs.tag }}
+            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service:${{ steps.semver_tag.outputs.created_tag }}
           fi
 
   push-tags:
