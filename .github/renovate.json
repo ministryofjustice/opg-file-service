@@ -10,6 +10,8 @@
         "Dependencies",
         "Renovate"
     ],
+    "configMigration": true,
+    "postUpdateOptions": ["gomodTidy"],
     "lockFileMaintenance": {
         "enabled": true
     },
