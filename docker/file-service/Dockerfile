@@ -1,5 +1,6 @@
 FROM golang:1.24 AS build-env
 
+ARG TARGETARCH
 WORKDIR /app
 
 COPY go.mod .
@@ -7,9 +8,17 @@ COPY go.sum .
 
 RUN go mod download
 
-COPY . .
+COPY main.go main.go
+COPY cache cache
+COPY dynamo dynamo
+COPY handlers handlers
+COPY internal internal
+COPY middleware middleware
+COPY session session
+COPY storage storage
+COPY zipper zipper
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/zipper
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -a -installsuffix cgo -o /go/bin/zipper
 
 FROM alpine:3
 
