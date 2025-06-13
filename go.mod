@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-sdk-go v1.55.7
 	github.com/aws/aws-secretsmanager-caching-go v1.2.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/gorilla/mux v1.8.1
 	github.com/ministryofjustice/opg-go-common v1.106.0
 	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.6.0

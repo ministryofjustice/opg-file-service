@@ -32,7 +32,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/ministryofjustice/opg-go-common/env"
 	"github.com/ministryofjustice/opg-go-common/telemetry"
 	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
@@ -61,9 +60,7 @@ func run(ctx context.Context, l *slog.Logger) error {
 	healthcheck.Register("http://localhost:8000" + pathPrefix + "/health-check")
 
 	// Create new serveMux
-	sm := mux.NewRouter().PathPrefix(pathPrefix).Subrouter()
-
-	sm.Use(telemetry.Middleware(l))
+	mux := http.NewServeMux()
 
 	// swagger:operation GET /health-check check health-check
 	// Register the health check handler
@@ -73,17 +70,12 @@ func run(ctx context.Context, l *slog.Logger) error {
 	//     description: File service is up and running
 	//   '404':
 	//     description: Not found
-	sm.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	secretsCache := cache.New()
-
-	// Create a sub-router for protected handlers
-	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.Use(middleware.JwtVerify(l, secretsCache))
-	postRouter := sm.Methods(http.MethodPost).Subrouter()
-	postRouter.Use(middleware.JwtVerify(l, secretsCache))
+	jwt := middleware.JwtVerify(l, secretsCache)
 
 	// swagger:operation POST /zip/request zip request
 	// Makes a request for a set of files to be downloaded from S3
@@ -127,7 +119,7 @@ func run(ctx context.Context, l *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	postRouter.Handle("/zip/request", zrh)
+	mux.Handle("POST /zip/request", jwt(zrh))
 
 	// swagger:operation GET /zip/{reference} zip download
 	// Download Zip file from zip request reference
@@ -158,13 +150,17 @@ func run(ctx context.Context, l *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	getRouter.Handle("/zip/{reference}", zh)
+	mux.Handle("GET /zip/{reference}", jwt(zh))
 
 	stdLogger := log.New(os.Stdout, "opg-file-service", log.LstdFlags)
 
+	telemetryMiddleware := telemetry.Middleware(l)
+
+	handler := http.StripPrefix(pathPrefix, telemetryMiddleware(mux))
+
 	s := &http.Server{
 		Addr:         ":8000",           // configure the bind address
-		Handler:      sm,                // set the default handler
+		Handler:      handler,           // set the default handler
 		ErrorLog:     stdLogger,         // Set the logger for the server
 		IdleTimeout:  120 * time.Second, // max time fro connections using TCP Keep-Alive
 		ReadTimeout:  1 * time.Second,   // max time to read request from the client
