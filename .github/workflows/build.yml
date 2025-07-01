@@ -36,7 +36,7 @@ jobs:
   build:
     name: Build Image
     needs: [test]
-    uses: ministryofjustice/opg-github-workflows/.github/workflows/build-multi-architecture-image.yml@6bc0246b5cca2f4c85d06986c82a9a42643f6851 # v3.13.0
+    uses: ministryofjustice/opg-github-workflows/.github/workflows/build-multi-architecture-image.yml@27a0f72b83c6b026fa4131230289bfbed9049cc7 # v3.15.0
     with:
       image_name: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/file-service
       build_options: --file docker/file-service/Dockerfile
@@ -98,7 +98,7 @@ jobs:
         run: make scan
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
+        uses: github/codeql-action/upload-sarif@39edc492dbe16b1465b0cafca41432d857bdb31a # v3.29.1
         if: always()
         with:
           sarif_file: 'test-results/trivy.sarif'
