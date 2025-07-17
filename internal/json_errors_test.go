@@ -2,7 +2,7 @@ package internal
 
 import (
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"net/http/httptest"
 	"testing"
 )
@@ -23,7 +23,7 @@ func TestWriteJSONError(t *testing.T) {
 		WriteJSONError(rr, test.error, test.descr, test.code)
 
 		r := rr.Result()
-		b, _ := ioutil.ReadAll(r.Body)
+		b, _ := io.ReadAll(r.Body)
 
 		assert.Equal(t, test.want, string(b))
 		assert.Equal(t, test.code, r.StatusCode)

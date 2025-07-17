@@ -1,22 +1,22 @@
 package dynamo
 
 import (
+	"context"
 	"errors"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"log/slog"
 	"opg-file-service/internal"
-	"opg-file-service/session"
 	"opg-file-service/storage"
-	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
 type RepositoryInterface interface {
-	Get(ref string) (*storage.Entry, error)
-	Delete(entry *storage.Entry) error
-	Add(entry *storage.Entry) error
+	Get(ctx context.Context, ref string) (*storage.Entry, error)
+	Delete(ctx context.Context, entry *storage.Entry) error
+	Add(ctx context.Context, entry *storage.Entry) error
 }
 
 type Repository struct {
@@ -25,28 +25,25 @@ type Repository struct {
 	table  string
 }
 
-func NewRepository(sess session.Session, l *slog.Logger) *Repository {
-	endpoint := os.Getenv("AWS_DYNAMODB_ENDPOINT")
-	sess.AwsSession.Config.Endpoint = &endpoint
-
-	dynamo := dynamodb.New(sess.AwsSession)
+func NewRepository(cfg *aws.Config, logger *slog.Logger) RepositoryInterface {
+	dynamo := dynamodb.NewFromConfig(*cfg)
 
 	return &Repository{
 		db:     dynamo,
-		logger: l,
+		logger: logger,
 		table:  internal.GetEnvVar("AWS_DYNAMODB_TABLE_NAME", "zip-requests"),
 	}
 }
 
-func (repo Repository) Get(ref string) (*storage.Entry, error) {
+func (repo Repository) Get(ctx context.Context, ref string) (*storage.Entry, error) {
 	notFound := storage.NotFoundError{Ref: ref}
 
-	result, err := repo.db.GetItem(&dynamodb.GetItemInput{
+	key, _ := attributevalue.Marshal(ref)
+
+	result, err := repo.db.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &repo.table,
-		Key: map[string]*dynamodb.AttributeValue{
-			"Ref": {
-				S: aws.String(ref),
-			},
+		Key: map[string]types.AttributeValue{
+			"Ref": key,
 		},
 	})
 	if err != nil {
@@ -56,7 +53,7 @@ func (repo Repository) Get(ref string) (*storage.Entry, error) {
 
 	entry := storage.Entry{}
 
-	err = dynamodbattribute.UnmarshalMap(result.Item, &entry)
+	err = attributevalue.UnmarshalMap(result.Item, &entry)
 	if err != nil {
 		repo.logger.Info("Failed to unmarshal Record, ", slog.Any("err", err.Error()))
 		return nil, notFound
@@ -70,31 +67,31 @@ func (repo Repository) Get(ref string) (*storage.Entry, error) {
 	return &entry, nil
 }
 
-func (repo Repository) Delete(entry *storage.Entry) error {
+func (repo Repository) Delete(ctx context.Context, entry *storage.Entry) error {
 	if entry == nil {
 		return errors.New("entry cannot be nil")
 	}
 
+	key, _ := attributevalue.Marshal(entry.Ref)
+
 	input := &dynamodb.DeleteItemInput{
 		TableName: &repo.table,
-		Key: map[string]*dynamodb.AttributeValue{
-			"Ref": {
-				S: aws.String(entry.Ref),
-			},
+		Key: map[string]types.AttributeValue{
+			"Ref": key,
 		},
 	}
 
-	_, err := repo.db.DeleteItem(input)
+	_, err := repo.db.DeleteItem(ctx, input)
 
 	return err
 }
 
-func (repo Repository) Add(entry *storage.Entry) error {
+func (repo Repository) Add(ctx context.Context, entry *storage.Entry) error {
 	if entry == nil {
 		return errors.New("entry cannot be nil")
 	}
 
-	av, err := dynamodbattribute.MarshalMap(entry)
+	av, err := attributevalue.MarshalMap(entry)
 	if err != nil {
 		return err
 	}
@@ -104,7 +101,7 @@ func (repo Repository) Add(entry *storage.Entry) error {
 		Item:      av,
 	}
 
-	_, err = repo.db.PutItem(input)
+	_, err = repo.db.PutItem(ctx, input)
 	if err != nil {
 		return err
 	}
