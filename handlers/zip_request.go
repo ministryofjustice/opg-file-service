@@ -2,13 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 	"opg-file-service/dynamo"
 	"opg-file-service/internal"
 	"opg-file-service/middleware"
-	"opg-file-service/session"
 	"opg-file-service/storage"
 	"time"
 
@@ -24,18 +22,11 @@ type ZipRequestHandler struct {
 	logger *slog.Logger
 }
 
-func NewZipRequestHandler(logger *slog.Logger) (*ZipRequestHandler, error) {
-	// create a new AWS session
-	sess, err := session.NewSession()
-	if err != nil {
-		logger.Error("unable to create a new session", slog.Any("err", err))
-		return nil, errors.New("unable to create a new session")
-	}
-
+func NewZipRequestHandler(logger *slog.Logger, repo dynamo.RepositoryInterface) *ZipRequestHandler {
 	return &ZipRequestHandler{
-		dynamo.NewRepository(*sess, logger),
+		repo,
 		logger,
-	}, nil
+	}
 }
 
 func (zrh *ZipRequestHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
@@ -71,7 +62,7 @@ func (zrh *ZipRequestHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = zrh.repo.Add(entry)
+	err = zrh.repo.Add(r.Context(), entry)
 	if err != nil {
 		zrh.logger.Error(err.Error())
 		internal.WriteJSONError(rw, "request", "Unable to save the zip request.", http.StatusInternalServerError)

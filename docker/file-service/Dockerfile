@@ -14,7 +14,6 @@ COPY dynamo dynamo
 COPY handlers handlers
 COPY internal internal
 COPY middleware middleware
-COPY session session
 COPY storage storage
 COPY zipper zipper
 
