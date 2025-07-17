@@ -19,13 +19,13 @@ type cacheable interface {
 	GetSecretString(key string) (string, error)
 }
 
-func JwtVerify(l *slog.Logger, secretsCache cacheable) func(next http.Handler) http.Handler {
+func JwtVerify(logger *slog.Logger, secretsCache cacheable) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			jwtSecret, jwtErr := secretsCache.GetSecretString("jwt-key")
 
 			if jwtErr != nil {
-				l.Error("Error in fetching JWT secret from cache", slog.Any("err", jwtErr.Error()))
+				logger.Error("Error in fetching JWT secret from cache", slog.Any("err", jwtErr.Error()))
 				internal.WriteJSONError(rw, "missing_secret_key", jwtErr.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -59,12 +59,12 @@ func JwtVerify(l *slog.Logger, secretsCache cacheable) func(next http.Handler) h
 				e := claims["session-data"].(string)
 				salt, saltErr := secretsCache.GetSecretString("user-hash-salt")
 				if saltErr != nil {
-					l.Error("Error in fetching hash salt from cache:", slog.Any("err", saltErr.Error()))
+					logger.Error("Error in fetching hash salt from cache:", slog.Any("err", saltErr.Error()))
 					internal.WriteJSONError(rw, "missing_secret_salt", saltErr.Error(), http.StatusInternalServerError)
 					return
 				}
 				he := hashEmail(e, salt)
-				l.Info("JWT Token is valid for user " + he)
+				logger.Info("JWT Token is valid for user " + he)
 
 				ctx := context.WithValue(r.Context(), HashedEmail{}, he)
 				next.ServeHTTP(rw, r.WithContext(ctx))

@@ -15,7 +15,6 @@ COPY handlers handlers
 COPY internal internal
 COPY middleware middleware
 COPY session session
-COPY storage storage
 COPY zipper zipper
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -a -installsuffix cgo -o /go/bin/zipper
