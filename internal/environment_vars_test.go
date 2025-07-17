@@ -24,9 +24,9 @@ func TestGetEnvVar(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		os.Unsetenv(test.env)
+		_ = os.Unsetenv(test.env)
 		if test.val != nil {
-			os.Setenv(test.env, *test.val)
+			_ = os.Setenv(test.env, *test.val)
 		}
 		actual := GetEnvVar(test.env, test.def)
 		assert.Equal(t, test.want, actual)

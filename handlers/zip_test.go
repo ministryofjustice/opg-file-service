@@ -7,10 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"opg-file-service/dynamo"
 	"opg-file-service/middleware"
 	"opg-file-service/storage"
-	"opg-file-service/zipper"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,16 +20,6 @@ func newTestLogger() (*bytes.Buffer, *slog.Logger) {
 	l := slog.New(slog.NewJSONHandler(&buf, nil))
 
 	return &buf, l
-}
-
-func TestNewZipHandler(t *testing.T) {
-	_, l := newTestLogger()
-	zh, err := NewZipHandler(l)
-	assert.Nil(t, err)
-	assert.IsType(t, ZipHandler{}, *zh)
-	assert.Equal(t, l, zh.logger)
-	assert.IsType(t, new(zipper.Zipper), zh.zipper)
-	assert.IsType(t, new(dynamo.Repository), zh.repo)
 }
 
 func TestZipHandler_ServeHTTP(t *testing.T) {

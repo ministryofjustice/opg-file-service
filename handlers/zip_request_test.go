@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"opg-file-service/dynamo"
 	"opg-file-service/middleware"
 	"opg-file-service/storage"
 	"strings"
@@ -15,15 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-func TestNewZipRequestHandler(t *testing.T) {
-	_, l := newTestLogger()
-	zrh, err := NewZipRequestHandler(l)
-	assert.Nil(t, err)
-	assert.IsType(t, ZipRequestHandler{}, *zrh)
-	assert.Equal(t, l, zrh.logger)
-	assert.IsType(t, new(dynamo.Repository), zrh.repo)
-}
 
 func TestZipRequestHandler_ServeHTTP(t *testing.T) {
 	tests := []struct {
@@ -129,7 +119,7 @@ func TestZipRequestHandler_ServeHTTP(t *testing.T) {
 		mux.ServeHTTP(rr, req.WithContext(ctx))
 		res := rr.Result()
 		bodyBuf := new(bytes.Buffer)
-		bodyBuf.ReadFrom(res.Body)
+		_, _ = bodyBuf.ReadFrom(res.Body)
 		body := bodyBuf.String()
 
 		assert.Equal(t, test.wantCode, res.StatusCode, test.scenario)

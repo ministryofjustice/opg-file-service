@@ -66,3 +66,18 @@ services:
       - TRIVY_JAVA_DB_REPOSITORY=${TRIVY_JAVA_DB_REPOSITORY}
       - TRIVY_USERNAME=${DOCKER_USERNAME}
       - TRIVY_PASSWORD=${DOCKER_PASSWORD}
+
+  go-lint:
+    image: golangci/golangci-lint:v2.2.1
+    working_dir: /go/src/app
+    volumes:
+      - ./:/go/src/app
+      - ./.cache/golangci-lint/v2.2.1:/root/.cache
+    command: golangci-lint run -v --timeout 5m
+
+  gosec:
+    image: securego/gosec:latest
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: -exclude-dir=.gocache -exclude-generated -fmt=sarif -out=/app/test-results/gosec.sarif -stdout -verbose=text /app/...

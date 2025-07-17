@@ -3,52 +3,58 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"io"
 	"net"
 	"net/http"
 	"opg-file-service/handlers"
-	"opg-file-service/session"
 	"opg-file-service/storage"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/suite"
 )
 
 type EndToEndTestSuite struct {
 	suite.Suite
 	bucket     *string
-	sess       *session.Session
-	s3         *s3.S3
-	s3uploader *s3manager.Uploader
+	s3         *s3.Client
+	s3uploader *manager.Uploader
 	testEntry  *storage.Entry
 	authHeader string
+	ctx        context.Context
 }
 
 func (suite *EndToEndTestSuite) SetupSuite() {
-	os.Setenv("ENVIRONMENT", "local")
-	suite.sess, _ = session.NewSession()
+	suite.ctx = context.Background()
+	_ = os.Setenv("ENVIRONMENT", "local")
+	_ = os.Setenv("AWS_ACCESS_KEY_ID", "test")
+	_ = os.Setenv("AWS_SECRET_ACCESS_KEY", "test")
+	_ = os.Setenv("AWS_ENDPOINT", "http://localstack:4566")
 	suite.bucket = aws.String("files")
-	s3sess := *suite.sess.AwsSession
-	s3sess.Config.Endpoint = aws.String(os.Getenv("AWS_S3_ENDPOINT"))
-	s3sess.Config.S3ForcePathStyle = aws.Bool(true)
-	suite.s3 = s3.New(&s3sess)
-	suite.s3uploader = s3manager.NewUploader(&s3sess)
+	config, _ := awsConfig(suite.ctx)
+	suite.s3 = s3.NewFromConfig(*config, func(u *s3.Options) {
+		u.UsePathStyle = true
+	})
+	suite.s3uploader = manager.NewUploader(suite.s3)
 
-	// create an S3 bucket
-	suite.s3.CreateBucket(&s3.CreateBucketInput{
+	_, err := suite.s3.CreateBucket(suite.ctx, &s3.CreateBucketInput{
 		Bucket: suite.bucket,
+		CreateBucketConfiguration: &types.CreateBucketConfiguration{
+			LocationConstraint: "eu-west-1",
+		},
 	})
-	suite.s3.WaitUntilBucketExists(&s3.HeadBucketInput{
-		Bucket: suite.bucket,
-	})
+	if err != nil {
+		panic(err)
+	}
 
 	// define fixtures
 	suite.testEntry = &storage.Entry{
@@ -73,7 +79,7 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 
 	// add files to bucket
 	for _, file := range suite.testEntry.Files {
-		suite.s3uploader.Upload(&s3manager.UploadInput{
+		_, _ = suite.s3uploader.Upload(suite.ctx, &s3.PutObjectInput{
 			Bucket: suite.bucket,
 			Key:    &file.FileName,
 			Body:   strings.NewReader("contents of " + file.FileName),
@@ -91,7 +97,7 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 			time.Sleep(time.Second)
 			continue
 		}
-		conn.Close()
+		_ = conn.Close()
 		return
 	}
 
@@ -100,10 +106,35 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 
 func (suite *EndToEndTestSuite) TearDownSuite() {
 	// empty the bucket
-	iter := s3manager.NewDeleteListIterator(suite.s3, &s3.ListObjectsInput{
+	paginator := s3.NewListObjectsV2Paginator(suite.s3, &s3.ListObjectsV2Input{
 		Bucket: suite.bucket,
 	})
-	s3manager.NewBatchDeleteWithClient(suite.s3).Delete(aws.BackgroundContext(), iter)
+
+	for paginator.HasMorePages() {
+		page, _ := paginator.NextPage(suite.ctx)
+
+		if len(page.Contents) > 0 {
+			var objectsToDelete []types.ObjectIdentifier
+			for _, obj := range page.Contents {
+				objectsToDelete = append(objectsToDelete, types.ObjectIdentifier{
+					Key: obj.Key,
+				})
+			}
+
+			_, _ = suite.s3.DeleteObjects(suite.ctx, &s3.DeleteObjectsInput{
+				Bucket: suite.bucket,
+				Delete: &types.Delete{
+					Objects: objectsToDelete,
+					Quiet:   aws.Bool(true),
+				},
+			})
+		}
+	}
+
+	_, err := suite.s3.DeleteBucket(suite.ctx, &s3.DeleteBucketInput{Bucket: suite.bucket})
+	if err != nil {
+		suite.Fail("", err)
+	}
 }
 
 func (suite *EndToEndTestSuite) GetUrl(path string) string {
@@ -133,7 +164,9 @@ func (suite *EndToEndTestSuite) TestZip() {
 	if err != nil {
 		suite.Fail("", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 
 	suite.Equal(http.StatusCreated, resp.StatusCode)
 
@@ -150,7 +183,9 @@ func (suite *EndToEndTestSuite) TestZip() {
 	if err != nil {
 		suite.Fail("", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 
 	suite.Equal(http.StatusOK, resp.StatusCode)
 
@@ -158,11 +193,11 @@ func (suite *EndToEndTestSuite) TestZip() {
 	suite.Greater(len(respBody.Link), len("/zip/"))
 
 	// store file on disk because zip.Reader expects an io.ReaderAt0
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		suite.Fail("", err)
 	}
-	err = ioutil.WriteFile("/tmp/test.zip", bodyBytes, 0644)
+	err = os.WriteFile("/tmp/test.zip", bodyBytes, 0644)
 	if err != nil {
 		suite.Fail("", err)
 	}
@@ -172,8 +207,12 @@ func (suite *EndToEndTestSuite) TestZip() {
 	if err != nil {
 		suite.Fail("", err)
 	}
-	defer rc.Close()
-	defer os.Remove("/tmp/test.zip")
+	defer func(rc *zip.ReadCloser) {
+		_ = rc.Close()
+	}(rc)
+	defer func() {
+		_ = os.Remove("/tmp/test.zip")
+	}()
 
 	want := make(map[string]string)
 	got := make(map[string]string)
@@ -193,9 +232,9 @@ func (suite *EndToEndTestSuite) TestZip() {
 			continue
 		}
 		fo, _ := file.Open()
-		fb, _ := ioutil.ReadAll(fo)
+		fb, _ := io.ReadAll(fo)
 		got[file.Name] = string(fb)
-		fo.Close()
+		_ = fo.Close()
 
 		// assert that file's modified date is within 5 seconds from now
 		suite.InDelta(time.Now().Unix(), file.Modified.Unix(), 5)
