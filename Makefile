@@ -26,3 +26,9 @@ swagger-up docs: # Serve swagger API docs on port 8383
 	@echo "Swagger docs available on http://localhost:8383/"
 down:
 	docker compose down
+
+go-lint:
+	docker compose run --rm go-lint
+
+gosec: setup-directories
+	docker compose run --rm gosec

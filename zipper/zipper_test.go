@@ -4,20 +4,18 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http/httptest"
-	"opg-file-service/session"
 	"opg-file-service/storage"
 	"testing"
 )
 
 func TestNewZipper(t *testing.T) {
-	sess, _ := session.NewSession()
-	z := NewZipper(*sess)
+	z := NewZipper(aws.NewConfig())
 	assert.Nil(t, z.rw)
 	assert.Nil(t, z.zw)
 	assert.NotNil(t, z.s3)
@@ -135,7 +133,7 @@ func TestZipper_AddFile(t *testing.T) {
 			Bucket: aws.String(test.expectedS3Bucket),
 			Key:    aws.String(test.expectedS3Key),
 		}
-		var options []func(*s3manager.Downloader)
+		var options []func(*manager.Downloader)
 		md.On("Download", FakeWriterAt{buf}, &s3input, options).Return(int64(0), test.downloadError)
 
 		err := z.AddFile(&f)

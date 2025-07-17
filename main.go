@@ -22,14 +22,22 @@ package main
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"log"
 	"log/slog"
 	"net/http"
 	"opg-file-service/cache"
+	"opg-file-service/dynamo"
 	"opg-file-service/handlers"
+	"opg-file-service/internal"
 	"opg-file-service/middleware"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/ministryofjustice/opg-go-common/env"
@@ -47,11 +55,11 @@ func main() {
 	}
 }
 
-func run(ctx context.Context, l *slog.Logger) error {
+func run(ctx context.Context, logger *slog.Logger) error {
 	pathPrefix := os.Getenv("PATH_PREFIX")
 	exportTraces := env.Get("TRACING_ENABLED", "0") == "1"
 
-	shutdown, err := telemetry.StartTracerProvider(ctx, l, exportTraces)
+	shutdown, err := telemetry.StartTracerProvider(ctx, logger, exportTraces)
 	defer shutdown()
 	if err != nil {
 		return err
@@ -74,8 +82,15 @@ func run(ctx context.Context, l *slog.Logger) error {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	secretsCache := cache.New()
-	jwt := middleware.JwtVerify(l, secretsCache)
+	cfg, err := awsConfig()
+	if err != nil {
+		return err
+	}
+
+	repository := dynamo.NewRepository(cfg, logger)
+
+	secretsCache := cache.New(cfg)
+	jwt := middleware.JwtVerify(logger, secretsCache)
 
 	// swagger:operation POST /zip/request zip request
 	// Makes a request for a set of files to be downloaded from S3
@@ -115,11 +130,7 @@ func run(ctx context.Context, l *slog.Logger) error {
 	//     description: Invalid JSON request
 	//   '500':
 	//     description: Unexpected error occurred
-	zrh, err := handlers.NewZipRequestHandler(l)
-	if err != nil {
-		return err
-	}
-	mux.Handle("POST /zip/request", jwt(zrh))
+	mux.Handle("POST /zip/request", jwt(handlers.NewZipRequestHandler(logger, repository)))
 
 	// swagger:operation GET /zip/{reference} zip download
 	// Download Zip file from zip request reference
@@ -146,15 +157,11 @@ func run(ctx context.Context, l *slog.Logger) error {
 	//     description: Missing, invalid or expired JWT token
 	//   '500':
 	//     description: Unexpected error occurred
-	zh, err := handlers.NewZipHandler(l)
-	if err != nil {
-		return err
-	}
-	mux.Handle("GET /zip/{reference}", jwt(zh))
+	mux.Handle("GET /zip/{reference}", jwt(handlers.NewZipHandler(logger, cfg, repository)))
 
 	stdLogger := log.New(os.Stdout, "opg-file-service", log.LstdFlags)
 
-	telemetryMiddleware := telemetry.Middleware(l)
+	telemetryMiddleware := telemetry.Middleware(logger)
 
 	handler := http.StripPrefix(pathPrefix, telemetryMiddleware(mux))
 
@@ -171,18 +178,48 @@ func run(ctx context.Context, l *slog.Logger) error {
 	go func() {
 		err := s.ListenAndServe()
 		if err != nil {
-			l.Error("listen and serve error", slog.Any("err", err.Error()))
+			logger.Error("listen and serve error", slog.Any("err", err.Error()))
 			os.Exit(1)
 		}
 	}()
 
 	// Gracefully shutdown when signal received
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-c
-	l.Info("Received terminate, graceful shutdown", "sig", sig)
+	logger.Info("signal received: ", "sig", sig)
 
-	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	tc, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	return s.Shutdown(tc)
+}
+
+func awsConfig() (*aws.Config, error) {
+	awsRegion := internal.GetEnvVar("AWS_REGION", "eu-west-1")
+	endpoint := os.Getenv("AWS_ENDPOINT")
+
+	creds := credentials.NewStaticCredentialsProvider(
+		os.Getenv("AWS_ACCESS_KEY_ID"),
+		os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		os.Getenv("AWS_SESSION_TOKEN"), // optional
+	)
+
+	cfg, err := config.LoadDefaultConfig(
+		context.Background(),
+		config.WithRegion(awsRegion),
+		config.WithBaseEndpoint(endpoint),
+		config.WithCredentialsProvider(creds),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if iamRole, ok := os.LookupEnv("AWS_IAM_ROLE"); ok {
+		client := sts.NewFromConfig(cfg)
+		cfg.Credentials = stscreds.NewAssumeRoleProvider(client, iamRole)
+	}
+
+	return &cfg, nil
 }

@@ -2,15 +2,14 @@ package zipper
 
 import (
 	"archive/zip"
+	"context"
 	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"net/http"
 	"net/url"
-	"opg-file-service/session"
 	"opg-file-service/storage"
-	"os"
 	"strings"
 )
 
@@ -26,12 +25,12 @@ type Zipper struct {
 	s3 Downloader
 }
 
-func NewZipper(sess session.Session) *Zipper {
-	endpoint := os.Getenv("AWS_S3_ENDPOINT")
-	sess.AwsSession.Config.Endpoint = &endpoint
-	sess.AwsSession.Config.S3ForcePathStyle = aws.Bool(true)
+func NewZipper(cfg *aws.Config) *Zipper {
+	s3Client := s3.NewFromConfig(*cfg, func(u *s3.Options) {
+		u.UsePathStyle = true
+	})
 
-	downloader := s3manager.NewDownloader(sess.AwsSession)
+	downloader := manager.NewDownloader(s3Client)
 	downloader.Concurrency = 1
 
 	return &Zipper{
@@ -78,7 +77,7 @@ func (z *Zipper) AddFile(f *storage.File) error {
 		Key:    aws.String(strings.Trim(u.Path, "/")),
 	}
 
-	_, err = z.s3.Download(fw, &input)
+	_, err = z.s3.Download(context.Background(), fw, &input)
 	if err != nil {
 		return err
 	}
