@@ -24,8 +24,8 @@ import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"log"
 	"log/slog"
 	"net/http"
@@ -198,23 +198,18 @@ func run(ctx context.Context, logger *slog.Logger) error {
 func awsConfig(ctx context.Context) (*aws.Config, error) {
 	awsRegion := internal.GetEnvVar("AWS_REGION", "eu-west-1")
 
-	creds := credentials.NewStaticCredentialsProvider(
-		os.Getenv("AWS_ACCESS_KEY_ID"),
-		os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		os.Getenv("AWS_SESSION_TOKEN"), // optional
-	)
-
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithRegion(awsRegion),
-		config.WithCredentialsProvider(creds),
-		config.WithAssumeRoleCredentialOptions(func(o *stscreds.AssumeRoleOptions) {
-			o.RoleARN = os.Getenv("AWS_IAM_ROLE")
-		}),
 
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	if iamRole, ok := os.LookupEnv("AWS_IAM_ROLE"); ok {
+		client := sts.NewFromConfig(cfg)
+		cfg.Credentials = stscreds.NewAssumeRoleProvider(client, iamRole)
 	}
 
 	if endpoint, ok := os.LookupEnv("AWS_ENDPOINT"); ok {
