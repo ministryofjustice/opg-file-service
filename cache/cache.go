@@ -1,11 +1,10 @@
 package cache
 
 import (
-	"opg-file-service/session"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-secretsmanager-caching-go/v2/secretcache"
 	"os"
-
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/aws/aws-secretsmanager-caching-go/secretcache"
 )
 
 type SecretsCache struct {
@@ -17,16 +16,18 @@ type awsSecretsCache interface {
 	GetSecretString(secretId string) (string, error)
 }
 
-func applyAwsConfig(c *secretcache.Cache) {
-	sess, _ := session.NewSession()
-	endpoint := os.Getenv("SECRETS_MANAGER_ENDPOINT")
-	sess.AwsSession.Config.Endpoint = &endpoint
-	c.Client = secretsmanager.New(sess.AwsSession)
+func applyAwsConfig(cfg *aws.Config) func(c *secretcache.Cache) {
+	return func(c *secretcache.Cache) {
+		c.Client = secretsmanager.NewFromConfig(*cfg)
+	}
 }
 
-func New() *SecretsCache {
+func New(cfg *aws.Config) *SecretsCache {
 	env := os.Getenv("ENVIRONMENT")
-	cache, _ := secretcache.New(applyAwsConfig)
+	cache, err := secretcache.New(applyAwsConfig(cfg))
+	if err != nil {
+		panic(err)
+	}
 	return &SecretsCache{env, cache}
 }
 
