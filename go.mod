@@ -8,11 +8,12 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.36.5
 	github.com/aws/aws-sdk-go-v2/config v1.29.17
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.70
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.19.5
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.84
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.44.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.84.0
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.19
 	github.com/aws/aws-sdk-go-v2/service/sts v1.34.0
-	github.com/aws/aws-secretsmanager-caching-go v1.2.0
 	github.com/aws/aws-secretsmanager-caching-go/v2 v2.1.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/ministryofjustice/opg-go-common v1.116.0
@@ -24,13 +25,11 @@ require (
 require (
 	github.com/aws/aws-sdk-go v1.47.10 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.11 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.19.5 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.32 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.36 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.36 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.36 // indirect
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.44.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.26.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.4 // indirect
