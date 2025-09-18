@@ -24,6 +24,7 @@ jobs:
         with:
           create_release: false
           default_bump: minor
+          prerelease: ${{ env.BRANCH_NAME == 'SP-3074' && false || true }}
 
       - name: Set Timestamp
         id: timestamp
