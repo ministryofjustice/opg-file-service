@@ -98,7 +98,7 @@ jobs:
       - name: Tag & Push
         run: |
           docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:${{ needs.create-tag.outputs.tag }}
-          if [ ${{ github.ref_name == 'main' }} ]; then
+          if [ ${{ github.ref_name == 'main' && 'true' || 'false' }} ]; then
             # We want all of the tags pushed
             docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:main-${{ needs.create-tag.outputs.tag }}
             docker tag  311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:main-${{ needs.create-tag.outputs.tag }}-${{ needs.create-tag.outputs.timestamp }}
