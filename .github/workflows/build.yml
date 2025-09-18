@@ -49,14 +49,6 @@ jobs:
       branch: ${{ steps.set-outputs.outputs.branch }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: Extract branch name
-        run: |
-          if [ "${{ github.head_ref }}" == "" ]; then
-            echo BRANCH_NAME=main >> $GITHUB_ENV
-          else
-            echo BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/\//-/g') >> $GITHUB_ENV
-          fi
-        id: extract_branch
       - uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
 
       - name: Set up Docker
@@ -105,6 +97,7 @@ jobs:
 
       - name: Tag & Push
         run: |
+          echo "${{ env.BRANCH_NAME }}"
           docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:${{ needs.create-tag.outputs.tag }}
           if [ "$BRANCH_NAME" == "main" ]; then
             # We want all of the tags pushed
