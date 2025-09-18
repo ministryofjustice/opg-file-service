@@ -18,12 +18,25 @@ jobs:
         with:
           fetch-depth: '0'
 
+      - name: Extract branch name
+        run: |
+          if [ "${{ github.head_ref }}" == "" ]; then
+            echo BRANCH_NAME=main >> $GITHUB_ENV
+          else
+            echo BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/\//-/g') >> $GITHUB_ENV
+          fi
+        id: extract_branch
+
+      - name: "output branch"
+        run: echo "${{ env.BRANCH_NAME }}"
+
       - name: "Generate semver tag and release"
         id: semver_tag
         uses: ministryofjustice/opg-github-actions/actions/semver@9c80e2dfa5701930bcd444f26081c1183d951409 # v4.3.2
         with:
           create_release: false
           default_bump: minor
+          prerelease: ${{ env.BRANCH_NAME == 'SP-3074' && 'false' || 'true' }}
 
       - name: Set Timestamp
         id: timestamp
