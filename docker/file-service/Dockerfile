@@ -1,5 +1,14 @@
 FROM golang:1.25 AS build-env
 
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid 65532 \
+    app
+
 ARG TARGETARCH
 WORKDIR /app
 
@@ -19,18 +28,15 @@ COPY zipper zipper
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -a -installsuffix cgo -o /go/bin/zipper
 
-FROM alpine:3
+FROM scratch
 
-RUN apk --update --no-cache add \
-    ca-certificates \
-    tzdata \
-    && rm -rf /var/cache/apk/*
-RUN apk --no-cache upgrade busybox libcrypto3 libssl3
+COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build-env /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=build-env /etc/passwd /etc/passwd
+COPY --from=build-env /etc/group /etc/group
 
-COPY --from=build-env /go/bin/zipper /go/bin/zipper
+COPY --from=build-env /go/bin/zipper /zipper
 
-RUN addgroup -S app && adduser -S -g app app \
-    && chown app:app /go/bin/zipper
-USER app
+USER app:app
 
-ENTRYPOINT ["/go/bin/zipper"]
+ENTRYPOINT ["/zipper"]
