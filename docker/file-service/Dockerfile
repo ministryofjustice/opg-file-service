@@ -1,4 +1,4 @@
-FROM golang:1.25 AS build-env
+FROM golang:1.26 AS build-env
 
 RUN adduser \
     --disabled-password \
