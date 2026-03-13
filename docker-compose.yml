@@ -18,7 +18,7 @@ services:
       - docker-compose.env
 
   localstack:
-    image: localstack/localstack:4.13.1
+    image: localstack/localstack:4.14.0
     environment:
       AWS_DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
@@ -74,7 +74,7 @@ services:
       - TRIVY_PASSWORD=${DOCKER_PASSWORD}
 
   go-lint:
-    image: golangci/golangci-lint:v2.10.1
+    image: golangci/golangci-lint:v2.11.3
     working_dir: /go/src/app
     volumes:
       - ./:/go/src/app
