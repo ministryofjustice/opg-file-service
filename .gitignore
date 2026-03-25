@@ -22,5 +22,4 @@ unit-tests.xml
 test-results
 
 .cache
-.trivy-cache
 .gocache
