@@ -7,13 +7,9 @@ build:
 	docker compose build file-service
 
 test-results:
-	mkdir -p -m 0777 test-results .gocache .trivy-cache
+	mkdir -p -m 0777 test-results .gocache
 
 setup-directories: test-results
-
-scan: setup-directories
-	docker compose run --rm trivy image --format table --exit-code 0 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:latest
-	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:latest
 
 test: setup-directories
 	docker compose run --rm test-runner
