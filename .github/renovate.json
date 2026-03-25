@@ -23,7 +23,7 @@
             "groupSlug": "all-minor-patch-updates",
             "matchUpdateTypes": ["minor", "patch"],
             "prPriority": 1,
-            "minimumReleaseAge": "3 days",
+            "minimumReleaseAge": "7 days",
             "matchPackageNames": ["*"]
         },
         {
@@ -32,7 +32,7 @@
             "groupSlug": "github-minor-patch-updates",
             "matchUpdateTypes": ["minor", "patch"],
             "prPriority": 2,
-            "minimumReleaseAge": "3 days",
+            "minimumReleaseAge": "7 days",
             "matchPackageNames": ["*"],
             "matchFileNames": [".github/**"]
         }
@@ -42,7 +42,7 @@
             "Dependencies",
             "Renovate"
         ],
-        "minimumReleaseAge": "3 days"
+        "minimumReleaseAge": "7 days"
     },
     "vulnerabilityAlerts": {
         "groupName": "Vulnerability Patches",
