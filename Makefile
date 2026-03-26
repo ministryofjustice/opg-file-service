@@ -1,4 +1,4 @@
-all: build scan test down
+all: build test down
 
 up:
 	docker compose up -d --build file-service
