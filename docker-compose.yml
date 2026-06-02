@@ -1,13 +1,11 @@
 ---
-version: "3.6"
-
 services:
   file-service:
     image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/file-service:latest
     build:
       dockerfile: docker/file-service/Dockerfile
     healthcheck:
-      test: ["CMD", "/go/bin/zipper", "-hc"]
+      test: [ "CMD", "/go/bin/zipper", "-hc" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -46,7 +44,7 @@ services:
     volumes:
       - ./:/go/src
     working_dir: /go/src
-    entrypoint: ["swagger", "generate", "spec", "-o", "/go/src/docs/openapi/openapi.yml", "--scan-models"]
+    entrypoint: [ "swagger", "generate", "spec", "-o", "/go/src/docs/openapi/openapi.yml", "--scan-models" ]
 
   test-runner:
     depends_on:
