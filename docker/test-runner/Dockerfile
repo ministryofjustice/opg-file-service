@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine
+FROM golang:1.26-alpine@sha256:f23e8b227fb4493eabe03bede4d5a32d04092da71962f1fb79b5f7d1e6c2a17f
 
 RUN go install gotest.tools/gotestsum@latest \
   && addgroup -S app && adduser -S -g app app
