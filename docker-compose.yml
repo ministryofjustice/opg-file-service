@@ -16,7 +16,7 @@ services:
       - docker-compose.env
 
   localstack:
-    image: localstack/localstack:4.14.0
+    image: localstack/localstack:4.14.0@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a
     environment:
       AWS_DEFAULT_REGION: eu-west-1
       HOSTNAME_EXTERNAL: localstack
@@ -28,7 +28,7 @@ services:
       - "./scripts/localstack:/etc/localstack/init/ready.d"
 
   swagger-ui:
-    image: swaggerapi/swagger-ui
+    image: swaggerapi/swagger-ui@sha256:135a9ced4005a947bbb1757bc509309d88519d985aa0f5616f4fdfab1eba6ff6
     environment:
       SWAGGER_JSON: /tmp/openapi.yml
     volumes:
@@ -37,7 +37,7 @@ services:
       - 8383:8080
 
   swagger-generate:
-    image: quay.io/goswagger/swagger
+    image: quay.io/goswagger/swagger@sha256:e4e89fcb84027a313d8d315a32cecaf2da76e2d8efb9546124082021b6e74389
     environment:
       GO111MODULE: "off"
       GOPATH: /go
@@ -60,7 +60,7 @@ services:
       - ./.gocache:/go/pkg/mod
 
   go-lint:
-    image: golangci/golangci-lint:v2.12.2
+    image: golangci/golangci-lint:v2.12.2@sha256:5cceeef04e53efe1470638d4b4b4f5ceefd574955ab3941b2d9a68a8c9ad5240
     working_dir: /go/src/app
     volumes:
       - ./:/go/src/app
@@ -68,7 +68,7 @@ services:
     command: golangci-lint run -v --timeout 5m
 
   gosec:
-    image: securego/gosec:latest
+    image: securego/gosec:latest@sha256:2cf71ea78210c496c65e3a987576a9c8317b68e20f2960520b3f6f8f9f539be5
     working_dir: /app
     volumes:
       - .:/app
