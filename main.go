@@ -22,10 +22,6 @@ package main
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"log"
 	"log/slog"
 	"net/http"
@@ -39,14 +35,20 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+
 	"github.com/ministryofjustice/opg-go-common/env"
 	"github.com/ministryofjustice/opg-go-common/telemetry"
-	"github.com/ministryofjustice/opg-go-healthcheck/healthcheck"
 )
 
 func main() {
 	ctx := context.Background()
 	logger := telemetry.NewLogger("opg-file-service")
+
+	internal.RunHealthcheck("http://localhost:8000" + os.Getenv("PATH_PREFIX") + "/health-check")
 
 	if err := run(ctx, logger); err != nil {
 		logger.Error("fatal startup error", slog.Any("err", err.Error()))
@@ -63,8 +65,6 @@ func run(ctx context.Context, logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-
-	healthcheck.Register("http://localhost:8000" + pathPrefix + "/health-check")
 
 	// Create new serveMux
 	mux := http.NewServeMux()
@@ -201,7 +201,6 @@ func awsConfig(ctx context.Context) (*aws.Config, error) {
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithRegion(awsRegion),
-
 	)
 	if err != nil {
 		return nil, err

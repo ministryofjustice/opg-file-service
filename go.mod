@@ -15,7 +15,6 @@ require (
 	github.com/aws/aws-secretsmanager-caching-go/v2 v2.2.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/ministryofjustice/opg-go-common v1.165.13
-	github.com/ministryofjustice/opg-go-healthcheck v1.1.0
 	github.com/rs/xid v1.6.0
 	github.com/stretchr/testify v1.11.1
 )
