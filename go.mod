@@ -7,14 +7,14 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.33.4
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.4
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.21.4
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.23.5
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.23.6
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.68.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.1
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.49.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.50.0
 	github.com/aws/aws-secretsmanager-caching-go/v2 v2.3.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/ministryofjustice/opg-go-common v1.165.27
+	github.com/ministryofjustice/opg-go-common v1.165.28
 	github.com/rs/xid v1.6.0
 	github.com/stretchr/testify v1.12.1
 )
