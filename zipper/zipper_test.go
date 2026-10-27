@@ -50,66 +50,102 @@ func TestZipper_Close(t *testing.T) {
 func TestZipper_AddFile(t *testing.T) {
 	tests := []struct {
 		s3path            string
+		fileName          string
 		createHeaderError error
 		downloadError     error
 		expectedS3Bucket  string
 		expectedS3Key     string
+		expectedZipName   string
 		expectedError     error
 	}{
 		{
 			"",
+			"file",
 			nil,
 			nil,
+			"",
 			"",
 			"",
 			errors.New("missing S3 path"),
 		},
 		{
 			"http://some/path",
+			"file",
 			nil,
 			nil,
+			"",
 			"",
 			"",
 			errors.New("invalid S3 path: http://some/path"),
 		},
 		{
 			"s3://file",
+			"file",
 			nil,
 			nil,
+			"",
 			"",
 			"",
 			errors.New("invalid S3 path: s3://file"),
 		},
 		{
 			"s3://bucket/file",
+			"file",
 			nil,
 			nil,
 			"bucket",
 			"file",
+			"folder/file",
 			nil,
 		},
 		{
 			"s3://bucket/file",
+			"file",
 			errors.New("some problem with zip header"),
 			nil,
 			"bucket",
 			"file",
+			"folder/file",
 			errors.New("some problem with zip header"),
 		},
 		{
 			"s3://bucket/file",
+			"file",
 			nil,
 			errors.New("some problem downloading from S3"),
 			"bucket",
 			"file",
+			"folder/file",
 			errors.New("some problem downloading from S3"),
+		},
+		{
+			"s3://bucket/path/original.pdf",
+			"file",
+			nil,
+			nil,
+			"bucket",
+			"path/original.pdf",
+			"folder/file.pdf",
+			nil,
+		},
+		{
+			"s3://bucket/path/original.pdf",
+			"renamed.txt",
+			nil,
+			nil,
+			"bucket",
+			"path/original.pdf",
+			"folder/renamed.txt",
+			nil,
 		},
 		{
 			":file",
+			"file",
 			nil,
 			nil,
 			"bucket",
 			"file",
+			"",
 			errors.New("unable to parse S3 path: :file"),
 		},
 	}
@@ -122,12 +158,17 @@ func TestZipper_AddFile(t *testing.T) {
 		z := Zipper{rr, mz, md}
 		f := storage.File{
 			S3path:   test.s3path,
-			FileName: "file",
+			FileName: test.fileName,
 			Folder:   "folder",
 		}
 
 		buf := new(bytes.Buffer)
-		mz.On("CreateHeader", mock.AnythingOfType("*zip.FileHeader")).Return(buf, test.createHeaderError)
+		var actualZipName string
+		mz.On("CreateHeader", mock.AnythingOfType("*zip.FileHeader")).
+			Run(func(args mock.Arguments) {
+				actualZipName = args.Get(0).(*zip.FileHeader).Name
+			}).
+			Return(buf, test.createHeaderError)
 
 		s3input := s3.GetObjectInput{
 			Bucket: aws.String(test.expectedS3Bucket),
@@ -138,5 +179,8 @@ func TestZipper_AddFile(t *testing.T) {
 
 		err := z.AddFile(nil, &f)
 		assert.Equal(t, test.expectedError, err)
+		if test.expectedZipName != "" {
+			assert.Equal(t, test.expectedZipName, actualZipName)
+		}
 	}
 }
