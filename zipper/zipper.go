@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"opg-file-service/storage"
+	"path"
 	"strings"
 )
 
@@ -66,7 +67,14 @@ func (z *Zipper) AddFile(ctx context.Context, f *storage.File) error {
 		return errors.New("invalid S3 path: " + f.S3path)
 	}
 
-	w, err := z.zw.CreateHeader(f.GetZipFileHeader())
+	zipFile := *f
+	if path.Ext(zipFile.FileName) == "" {
+		if extension := path.Ext(u.Path); extension != "" {
+			zipFile.FileName += extension
+		}
+	}
+
+	w, err := z.zw.CreateHeader(zipFile.GetZipFileHeader())
 	if err != nil {
 		return err
 	}
