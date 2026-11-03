@@ -49,7 +49,7 @@ paths:
             description: Makes a request for a set of files to be downloaded from S3
             operationId: request
             parameters:
-                - description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
+                - description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file; if a filename has no extension, its S3 key extension is used
                   in: body
                   name: files
                   required: true

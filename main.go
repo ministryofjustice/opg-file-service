@@ -99,7 +99,7 @@ func run(ctx context.Context, logger *slog.Logger) error {
 	// parameters:
 	// - name: files
 	//   in: body
-	//   description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file
+	//   description: s3 file paths alongside the human readable filenames as each file will be displayed in the zip file; if a filename has no extension, its S3 key extension is used
 	//   required: true
 	//   schema:
 	//       type: array
