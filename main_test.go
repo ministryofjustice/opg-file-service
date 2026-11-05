@@ -38,7 +38,7 @@ func (suite *EndToEndTestSuite) SetupSuite() {
 	_ = os.Setenv("ENVIRONMENT", "local")
 	_ = os.Setenv("AWS_ACCESS_KEY_ID", "test")
 	_ = os.Setenv("AWS_SECRET_ACCESS_KEY", "test")
-	_ = os.Setenv("AWS_ENDPOINT", "http://localstack:4566")
+	_ = os.Setenv("AWS_ENDPOINT", "http://ministack:4566")
 	suite.bucket = aws.String("files")
 	config, _ := awsConfig(suite.ctx)
 	suite.s3 = s3.NewFromConfig(*config, func(u *s3.Options) {

@@ -18,17 +18,16 @@ services:
     env_file:
       - docker-compose.env
 
-  localstack:
-    image: localstack/localstack:4.14.0@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a
+  ministack:
+    image: ministackorg/ministack:1.5.34@sha256:21dd9d52bd1e3308b55e5205945963eb024398f69e874ecc329f76783da01e62
     environment:
       AWS_DEFAULT_REGION: eu-west-1
-      HOSTNAME_EXTERNAL: localstack
       SERVICES: s3,dynamodb,secretsmanager
-      DEBUG: 1
+      LOG_LEVEL: DEBUG
     ports:
       - 4566:4566
     volumes:
-      - "./scripts/localstack:/etc/localstack/init/ready.d"
+      - "./scripts/ministack:/docker-entrypoint-initaws.d/ready.d"
 
   swagger-ui:
     image: swaggerapi/swagger-ui@sha256:135a9ced4005a947bbb1757bc509309d88519d985aa0f5616f4fdfab1eba6ff6
@@ -51,7 +50,7 @@ services:
 
   test-runner:
     depends_on:
-      - localstack
+      - ministack
     build:
       dockerfile: docker/test-runner/Dockerfile
     command: gotestsum --junitfile test-results/unit-tests.xml -- ./... -coverprofile=test-results/test-coverage.txt
