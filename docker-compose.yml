@@ -19,7 +19,7 @@ services:
       - docker-compose.env
 
   ministack:
-    image: ministackorg/ministack:1.5.34@sha256:21dd9d52bd1e3308b55e5205945963eb024398f69e874ecc329f76783da01e62
+    image: ministackorg/ministack:1.5.41@sha256:aef90fec1a4581c5fa7b4f79d347898f8475111bac95bbab3736f4a44f5f8573
     environment:
       AWS_DEFAULT_REGION: eu-west-1
       SERVICES: s3,dynamodb,secretsmanager
