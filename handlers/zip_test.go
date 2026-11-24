@@ -73,7 +73,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			nil,
 			404,
 			[]string{
-				"Zip files for reference: test",
+				"Zip files for reference",
 				storage.NotFoundError{Ref: "test"}.Error(),
 			},
 		},
@@ -96,7 +96,7 @@ func TestZipHandler_ServeHTTP(t *testing.T) {
 			nil,
 			404,
 			[]string{
-				"Reference token 'test' has expired",
+				"Reference token has expired",
 			},
 		},
 		{
