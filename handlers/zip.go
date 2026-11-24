@@ -29,18 +29,18 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
 	reference := r.PathValue("reference")
-	zh.logger.Info("Zip files for reference: " + reference)
+	zh.logger.Info("Zip files for reference", slog.String("ref", reference))
 
 	// fetch entry from DynamoDB
 	entry, err := zh.repo.Get(r.Context(), reference)
 	if err != nil {
-		zh.logger.Error(err.Error())
+		zh.logger.Error("Unable to get entry", slog.String("err", err.Error()))
 		internal.WriteJSONError(rw, "ref", "Reference token not found.", http.StatusNotFound)
 		return
 	}
 
 	if entry.IsExpired() {
-		zh.logger.Info("Reference token '" + reference + "' has expired.")
+		zh.logger.Info("Reference token has expired", slog.String("ref", reference))
 		internal.WriteJSONError(rw, "ref", "Reference token has expired.", http.StatusNotFound)
 		return
 	}
@@ -59,7 +59,7 @@ func (zh *ZipHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	for _, file := range entry.Files {
 		err := zh.zipper.AddFile(r.Context(), &file)
 		if err != nil {
-			zh.logger.Error(err.Error())
+			zh.logger.Error("Unable to add file to zip", slog.String("err", err.Error()))
 			internal.WriteJSONError(rw, "zip", "Unable to zip requested file.", http.StatusInternalServerError)
 			return
 		}

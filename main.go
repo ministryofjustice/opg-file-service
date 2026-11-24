@@ -48,7 +48,7 @@ func main() {
 	ctx := context.Background()
 	logger := telemetry.NewLogger("opg-file-service")
 
-	internal.RunHealthcheck("http://localhost:8000" + os.Getenv("PATH_PREFIX") + "/health-check")
+	internal.RunHealthcheck(os.Getenv("PATH_PREFIX") + "/health-check")
 
 	if err := run(ctx, logger); err != nil {
 		logger.Error("fatal startup error", slog.Any("err", err.Error()))
